@@ -1,0 +1,19 @@
+{
+  "schema_version": 2,
+  "id": "target_001",
+  "display_name": "ALEX / LEXA",
+  "brief": "A captured authentication hash belongs to an ANUS INDUSTRIES HR account. Read the dossier, collect password fragments, and crack the hash on your rented compute relay. Keep Exposure below 100.",
+  "facts": [
+    {"id": "pet", "label": "His favourite person isn't a person", "value": "Barsik, the cat", "source": "SOCIAL / @lexa_never_sleeps", "note": "“All my important accounts are named after Barsik. People betray you. A cat at least makes eye contact.” His previous cat was called Fluffy."},
+    {"id": "birth_year", "label": "Employee record", "value": "Born 17 April 1990", "source": "HR / personnel archive", "note": "Alex uses his full birth year in memorable numbers. Reason for employment: “Not dead yet.”"},
+    {"id": "nickname", "label": "Public handle", "value": "Lexa", "source": "SOCIAL / profile", "note": "Human Remains Manager. “We are not a family. You can't downsize your family every quarter.”"},
+    {"id": "leaked", "label": "An old password", "value": "Fluffy2010!", "source": "BREACH / 2023 archive", "note": "No longer valid. Notice the pattern: capitalized name, four-digit year, exclamation mark. Fluffy has since been promoted to cloud storage."},
+    {"id": "habit", "label": "A message to IT", "value": "“Now I replace lowercase a with @. Name first, year next, ! at the end. Secure enough?”", "source": "CHAT / #security-awareness", "note": "Posted after his last password change. IT replied: “That's my thirteenth reason to quit.”"}
+  ],
+  "solution": {
+    "password": "B@rsik1990!",
+    "fact_ids": ["pet", "birth_year", "leaked", "habit"],
+    "hint_fact_id": "pet",
+    "explanation": "His current cat is Barsik. Add his birth year, 1990, and follow the old password's capital letter and !. The message to IT explains a → @. You cracked a habit, not a cipher."
+  }
+}
