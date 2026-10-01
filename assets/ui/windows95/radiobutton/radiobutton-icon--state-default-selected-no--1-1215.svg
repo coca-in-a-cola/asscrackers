@@ -1,0 +1,18 @@
+<svg xmlns="http://www.w3.org/2000/svg" width="12" height="12" viewBox="486 88 12 12" fill="none"><g id="Radiobutton "><g id="Radiobutton icon"><g id="State=Default, Selected=No">
+<g id="container">
+<g id="Union">
+<path d="M496 92V91H495V92L496 92Z" fill="#DEDEDE" />
+<path d="M496 96H497V92H496V96Z" fill="#DEDEDE" />
+<path d="M494 98H496V96H495V97H494V98Z" fill="#DEDEDE" />
+<path fill-rule="evenodd" clip-rule="evenodd" d="M490 98V97H488V98H490ZM490 98H494V99H490V98Z" fill="#DEDEDE" />
+</g>
+<path id="Union_2" fill-rule="evenodd" clip-rule="evenodd" d="M494 90H490V91H489V92H488V96H489V97H490V98H488V99H490V100H494V99H496V98H497V96H498V92H497V90H496V92H495V91H494V90ZM496 96V92H497V96H496ZM494 98H490V99H494V98ZM494 98V97H495V96H496V98H494Z" fill="white" />
+<g id="Union_3">
+<path fill-rule="evenodd" clip-rule="evenodd" d="M490 89H494V90H490V89ZM494 90V91H496V90H494Z" fill="black" />
+<path d="M488 92V90H490V91H489V92H488Z" fill="black" />
+<path fill-rule="evenodd" clip-rule="evenodd" d="M488 96H487V92H488V96ZM488 96H489V97H488V96Z" fill="black" />
+</g>
+<path id="Union_4" d="M494 88H490V89H488V90H487V92H486V96H487V98H488V96H487V92H488V90H490V89H494V90H496V89H494V88Z" fill="#808080" />
+</g>
+</g>
+</g></g></svg>

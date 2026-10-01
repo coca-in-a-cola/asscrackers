@@ -1,0 +1,41 @@
+<svg xmlns="http://www.w3.org/2000/svg" width="100" height="18" viewBox="3118.49305816 84.1485928705 38.4240150094 6.91632270169" fill="none"><g id="Titlebar_11"><g id="Statusbar_14"><g id="Type=Blank" filter="url(#filter144_ii_1_2)">
+<rect width="100" height="18" transform="translate(3118.49 84.1486) scale(0.38424)" fill="#C0C0C0" />
+<g id="Drag Size icon_12">
+<g id="Union_144">
+<path d="M3156.53 86.0698H3156.15V86.454H3155.76V86.8383H3155.38V87.2225H3155V87.6068H3154.61V87.991H3154.23V88.3752H3153.84V88.7595H3153.46V89.1437H3153.07V89.528H3152.69V89.9122H3152.31V90.2964H3151.92V90.6807H3152.31V90.2964H3152.69V89.9122H3153.07V89.528H3153.46V89.1437H3153.84V88.7595H3154.23V88.3752H3154.61V87.991H3155V87.6068H3155.38V87.2225H3155.76V86.8383H3156.15V86.454H3156.53V86.0698Z" fill="white" />
+<path d="M3153.46 90.2964H3153.84V90.6807H3153.46V90.2964Z" fill="white" />
+<path d="M3154.23 89.9122H3153.84V90.2964H3154.23V89.9122Z" fill="white" />
+<path d="M3154.61 89.528V89.9122H3154.23V89.528H3154.61Z" fill="white" />
+<path d="M3155 89.1437H3154.61V89.528H3155V89.1437Z" fill="white" />
+<path d="M3155.38 88.7595V89.1437H3155V88.7595H3155.38Z" fill="white" />
+<path d="M3155.76 88.3752H3155.38V88.7595H3155.76V88.3752Z" fill="white" />
+<path d="M3156.15 87.991V88.3752H3155.76V87.991H3156.15Z" fill="white" />
+<path d="M3156.15 87.991V87.6068H3156.53V87.991H3156.15Z" fill="white" />
+<path d="M3155 90.2964H3155.38V90.6807H3155V90.2964Z" fill="white" />
+<path d="M3155.76 89.9122H3155.38V90.2964H3155.76V89.9122Z" fill="white" />
+<path d="M3156.15 89.528V89.9122H3155.76V89.528H3156.15Z" fill="white" />
+<path d="M3156.15 89.528V89.1437H3156.53V89.528H3156.15Z" fill="white" />
+</g>
+<g id="Union_145">
+<path d="M3156.15 86.454H3156.53V87.2225H3156.15V87.6068H3155.76V87.991H3155.38V88.3752H3155V88.7595H3154.61V89.1437H3154.23V89.528H3153.84V89.9122H3153.46V90.2964H3153.07V90.6807H3152.31V90.2964H3152.69V89.9122H3153.07V89.528H3153.46V89.1437H3153.84V88.7595H3154.23V88.3752H3154.61V87.991H3155V87.6068H3155.38V87.2225H3155.76V86.8383H3156.15V86.454Z" fill="#808080" />
+<path d="M3156.15 87.991H3156.53V88.7595H3156.15V89.1437H3155.76V89.528H3155.38V89.9122H3155V90.2964H3154.61V90.6807H3153.84V90.2964H3154.23V89.9122H3154.61V89.528H3155V89.1437H3155.38V88.7595H3155.76V88.3752H3156.15V87.991Z" fill="#808080" />
+<path d="M3156.53 89.528H3156.15V89.9122H3155.76V90.2964H3155.38V90.6807H3156.15V90.2964H3156.53V89.528Z" fill="#808080" />
+</g>
+<path id="Union_146" d="M3156.92 86.0698H3156.53V90.6807H3151.92V91.0649H3156.92V86.0698Z" fill="#C0C0C0" />
+</g>
+</g>
+</g></g><defs><filter id="filter144_ii_1_2" x="3118.49" y="84.1486" width="38.424" height="6.91632" filterUnits="userSpaceOnUse" color-interpolation-filters="sRGB">
+<feFlood flood-opacity="0" result="BackgroundImageFix" />
+<feBlend mode="normal" in="SourceGraphic" in2="BackgroundImageFix" result="shape" />
+<feColorMatrix in="SourceAlpha" type="matrix" values="0 0 0 0 0 0 0 0 0 0 0 0 0 0 0 0 0 0 127 0" result="hardAlpha" />
+<feOffset dx="1" dy="1" />
+<feComposite in2="hardAlpha" operator="arithmetic" k2="-1" k3="1" />
+<feColorMatrix type="matrix" values="0 0 0 0 0.501961 0 0 0 0 0.501961 0 0 0 0 0.501961 0 0 0 1 0" />
+<feBlend mode="normal" in2="shape" result="effect1_innerShadow_1_2" />
+<feColorMatrix in="SourceAlpha" type="matrix" values="0 0 0 0 0 0 0 0 0 0 0 0 0 0 0 0 0 0 127 0" result="hardAlpha" />
+<feOffset dx="-1" dy="-1" />
+<feComposite in2="hardAlpha" operator="arithmetic" k2="-1" k3="1" />
+<feColorMatrix type="matrix" values="0 0 0 0 1 0 0 0 0 1 0 0 0 0 1 0 0 0 1 0" />
+<feBlend mode="normal" in2="effect1_innerShadow_1_2" result="effect2_innerShadow_1_2" />
+</filter>
+</defs></svg>
