@@ -1,0 +1,305 @@
+[gd_resource type="Theme" load_steps=35 format=3]
+
+[ext_resource type="Texture2D" path="res://assets/ui/windows95/button/button--state-default--1-11.png" id="1"]
+[ext_resource type="Texture2D" path="res://assets/ui/windows95/button/button--state-pressed--1-13.png" id="2"]
+[ext_resource type="Texture2D" path="res://assets/ui/windows95/button/button--state-disabled--1-15.png" id="3"]
+[ext_resource type="Texture2D" path="res://assets/ui/windows95/window-frame/window-frame--type-empty--1-2692.png" id="4"]
+[ext_resource type="Texture2D" path="res://assets/ui/windows95/input-field/input--state-default--1-1849.png" id="5"]
+[ext_resource type="Texture2D" path="res://assets/ui/windows95/titlebar/statusbar--type-blank--1-3295.png" id="6"]
+[ext_resource type="Texture2D" path="res://assets/ui/windows95/checkbox/checkbox-icon--state-default-selected-no--1-1628.png" id="7"]
+[ext_resource type="Texture2D" path="res://assets/ui/windows95/checkbox/checkbox-icon--state-default-selected-yes--1-1629.png" id="8"]
+[ext_resource type="Texture2D" path="res://assets/ui/windows95/checkbox/checkbox-icon--state-disabled-selected-no--1-1632.png" id="9"]
+[ext_resource type="Texture2D" path="res://assets/ui/windows95/checkbox/checkbox-icon--state-disabled-selected-yes--1-1633.png" id="10"]
+[ext_resource type="Texture2D" path="res://assets/ui/windows95/window-frame/window-frame--1-925.png" id="11"]
+
+[sub_resource type="SystemFont" id="Font_ui"]
+font_names = PackedStringArray("Tahoma", "Arial", "DejaVu Sans")
+antialiasing = 0
+font_hinting = 2
+
+[sub_resource type="SystemFont" id="Font_terminal"]
+font_names = PackedStringArray("Consolas", "DejaVu Sans Mono")
+antialiasing = 0
+
+[sub_resource type="SystemFont" id="Font_title"]
+font_names = PackedStringArray("Tahoma", "Arial", "DejaVu Sans")
+font_weight = 700
+antialiasing = 0
+
+[sub_resource type="StyleBoxTexture" id="Slot"]
+texture = ExtResource("1")
+texture_margin_left = 2.0
+texture_margin_top = 2.0
+texture_margin_right = 2.0
+texture_margin_bottom = 2.0
+draw_center = false
+content_margin_left = 8.0
+content_margin_top = 4.0
+content_margin_right = 8.0
+content_margin_bottom = 4.0
+
+[sub_resource type="StyleBoxTexture" id="Button_normal"]
+texture = ExtResource("1")
+texture_margin_left = 2.0
+texture_margin_top = 2.0
+texture_margin_right = 2.0
+texture_margin_bottom = 2.0
+draw_center = false
+content_margin_left = 12.0
+content_margin_top = 6.0
+content_margin_right = 12.0
+content_margin_bottom = 6.0
+
+[sub_resource type="StyleBoxTexture" id="Button_pressed"]
+texture = ExtResource("2")
+texture_margin_left = 2.0
+texture_margin_top = 2.0
+texture_margin_right = 2.0
+texture_margin_bottom = 2.0
+draw_center = false
+content_margin_left = 12.0
+content_margin_top = 6.0
+content_margin_right = 12.0
+content_margin_bottom = 6.0
+
+[sub_resource type="StyleBoxTexture" id="Button_disabled"]
+texture = ExtResource("3")
+texture_margin_left = 2.0
+texture_margin_top = 2.0
+texture_margin_right = 2.0
+texture_margin_bottom = 2.0
+draw_center = false
+content_margin_left = 12.0
+content_margin_top = 6.0
+content_margin_right = 12.0
+content_margin_bottom = 6.0
+
+[sub_resource type="StyleBoxFlat" id="Focus"]
+bg_color = Color(0, 0, 0, 0)
+border_width_left = 1
+border_width_top = 1
+border_width_right = 1
+border_width_bottom = 1
+border_color = Color(0.368627, 0.290196, 0.443137, 1)
+draw_center = false
+
+[sub_resource type="StyleBoxTexture" id="Window_frame"]
+texture = ExtResource("4")
+texture_margin_left = 3.0
+texture_margin_top = 2.0
+texture_margin_right = 3.0
+texture_margin_bottom = 2.0
+draw_center = false
+content_margin_left = 4.0
+content_margin_top = 4.0
+content_margin_right = 4.0
+content_margin_bottom = 4.0
+
+[sub_resource type="StyleBoxFlat" id="Titlebar"]
+bg_color = Color(0.466667, 0.396078, 0.541176, 1)
+content_margin_left = 4.0
+content_margin_top = 3.0
+content_margin_right = 3.0
+content_margin_bottom = 3.0
+
+[sub_resource type="StyleBoxFlat" id="Titlebar_inactive"]
+bg_color = Color(0.407843, 0.517647, 0.529412, 1)
+content_margin_left = 4.0
+content_margin_top = 3.0
+content_margin_right = 3.0
+content_margin_bottom = 3.0
+
+[sub_resource type="StyleBoxEmpty" id="Shortcut_empty"]
+
+[sub_resource type="StyleBoxFlat" id="Shortcut_hover"]
+bg_color = Color(0.86, 0.92, 0.86, 0.14)
+
+[sub_resource type="StyleBoxFlat" id="Shortcut_focus"]
+bg_color = Color(0.86, 0.92, 0.86, 0.1)
+border_width_left = 1
+border_width_top = 1
+border_width_right = 1
+border_width_bottom = 1
+border_color = Color(0.9, 0.94, 0.84, 0.65)
+
+[sub_resource type="StyleBoxFlat" id="Surface"]
+bg_color = Color(0.835294, 0.854902, 0.839216, 1)
+content_margin_left = 8.0
+content_margin_top = 8.0
+content_margin_right = 8.0
+content_margin_bottom = 8.0
+
+[sub_resource type="AtlasTexture" id="Input_border"]
+atlas = ExtResource("5")
+region = Rect2(0, 15, 142, 22)
+
+[sub_resource type="StyleBoxTexture" id="Input"]
+texture = SubResource("Input_border")
+texture_margin_left = 3.0
+texture_margin_top = 3.0
+texture_margin_right = 0.0
+texture_margin_bottom = 3.0
+content_margin_left = 8.0
+content_margin_top = 6.0
+content_margin_right = 8.0
+content_margin_bottom = 6.0
+
+[sub_resource type="StyleBoxFlat" id="Status"]
+bg_color = Color(0.803922, 0.831373, 0.823529, 1)
+border_width_left = 1
+border_width_top = 1
+border_width_right = 1
+border_width_bottom = 1
+border_color = Color(0.517647, 0.607843, 0.607843, 1)
+content_margin_left = 6.0
+content_margin_top = 3.0
+content_margin_right = 18.0
+content_margin_bottom = 3.0
+
+[sub_resource type="StyleBoxFlat" id="Inset"]
+bg_color = Color(0.937255, 0.937255, 0.890196, 1)
+border_width_left = 2
+border_width_top = 2
+border_width_right = 2
+border_width_bottom = 2
+border_color = Color(0.517647, 0.607843, 0.607843, 1)
+content_margin_left = 8.0
+content_margin_top = 6.0
+content_margin_right = 8.0
+content_margin_bottom = 6.0
+
+[sub_resource type="StyleBoxFlat" id="Progress_fill"]
+bg_color = Color(0.466667, 0.396078, 0.541176, 1)
+
+[sub_resource type="StyleBoxFlat" id="Scroll_track"]
+bg_color = Color(0.886275, 0.901961, 0.862745, 1)
+content_margin_left = 8.0
+content_margin_right = 8.0
+content_margin_top = 8.0
+content_margin_bottom = 8.0
+
+[sub_resource type="StyleBoxFlat" id="Scroll_grabber"]
+bg_color = Color(0.796078, 0.839216, 0.823529, 1)
+border_width_left = 1
+border_width_top = 1
+border_width_right = 1
+border_width_bottom = 1
+border_color = Color(0.498039, 0.498039, 0.498039, 1)
+content_margin_left = 8.0
+content_margin_top = 8.0
+content_margin_right = 8.0
+content_margin_bottom = 8.0
+
+[sub_resource type="StyleBoxEmpty" id="Empty"]
+content_margin_left = 3.0
+content_margin_right = 3.0
+content_margin_top = 3.0
+content_margin_bottom = 3.0
+
+[resource]
+default_font = SubResource("Font_ui")
+default_font_size = 14
+Palette/colors/face = Color(0.835294, 0.854902, 0.839216, 1)
+Palette/colors/desktop_top = Color(0.333333, 0.556863, 0.568627, 1)
+Palette/colors/desktop_bottom = Color(0.203922, 0.364706, 0.388235, 1)
+Palette/colors/desktop_grid = Color(0.75, 0.86, 0.81, 0.23)
+Palette/colors/desktop_ink = Color(0.9, 0.9, 0.75, 0.75)
+Palette/colors/text = Color(0, 0, 0, 1)
+Palette/colors/muted = Color(0.3, 0.3, 0.3, 1)
+Palette/colors/accent = Color(0.368627, 0.290196, 0.443137, 1)
+Palette/colors/error = Color(0.65, 0, 0, 1)
+Palette/colors/success = Color(0, 0.35, 0, 1)
+Palette/colors/terminal_text = Color(0.87451, 0.87451, 0.87451, 1)
+Palette/colors/terminal_success = Color(0.65, 0.88, 0.79, 1)
+Palette/colors/terminal_error = Color(0.96, 0.66, 0.69, 1)
+Palette/colors/terminal_warning = Color(0.96, 0.86, 0.63, 1)
+Label/colors/font_color = Color(0, 0, 0, 1)
+RichTextLabel/colors/default_color = Color(0, 0, 0, 1)
+RichTextLabel/styles/focus = SubResource("Focus")
+Button/colors/font_color = Color(0, 0, 0, 1)
+Button/colors/font_hover_color = Color(0, 0, 0, 1)
+Button/colors/font_pressed_color = Color(0, 0, 0, 1)
+Button/colors/font_disabled_color = Color(0.498039, 0.498039, 0.498039, 1)
+Button/colors/font_focus_color = Color(0, 0, 0, 1)
+Button/styles/normal = SubResource("Button_normal")
+Button/styles/hover = SubResource("Button_normal")
+Button/styles/pressed = SubResource("Button_pressed")
+Button/styles/disabled = SubResource("Button_disabled")
+Button/styles/focus = SubResource("Focus")
+CheckBox/colors/font_color = Color(0, 0, 0, 1)
+CheckBox/colors/font_hover_color = Color(0, 0, 0, 1)
+CheckBox/colors/font_pressed_color = Color(0, 0, 0, 1)
+CheckBox/colors/font_focus_color = Color(0, 0, 0, 1)
+CheckBox/colors/font_disabled_color = Color(0.498039, 0.498039, 0.498039, 1)
+CheckBox/icons/unchecked = ExtResource("7")
+CheckBox/icons/checked = ExtResource("8")
+CheckBox/icons/unchecked_disabled = ExtResource("9")
+CheckBox/icons/checked_disabled = ExtResource("10")
+CheckBox/styles/normal = SubResource("Empty")
+CheckBox/styles/hover = SubResource("Empty")
+CheckBox/styles/pressed = SubResource("Empty")
+CheckBox/styles/disabled = SubResource("Empty")
+CheckBox/styles/focus = SubResource("Focus")
+LineEdit/styles/normal = SubResource("Input")
+LineEdit/styles/read_only = SubResource("Input")
+LineEdit/styles/focus = SubResource("Focus")
+LineEdit/colors/font_color = Color(0, 0, 0, 1)
+LineEdit/colors/font_uneditable_color = Color(0.498039, 0.498039, 0.498039, 1)
+LineEdit/colors/font_placeholder_color = Color(0.498039, 0.498039, 0.498039, 1)
+LineEdit/colors/caret_color = Color(0, 0, 0, 1)
+LineEdit/colors/selection_color = Color(0, 0, 0.5, 1)
+PanelContainer/styles/panel = SubResource("Surface")
+Panel/styles/panel = SubResource("Surface")
+Slot/base_type = &"PanelContainer"
+Slot/styles/panel = SubResource("Slot")
+WindowFrame/base_type = &"PanelContainer"
+WindowFrame/styles/panel = SubResource("Window_frame")
+Titlebar/base_type = &"PanelContainer"
+Titlebar/styles/panel = SubResource("Titlebar")
+TitlebarInactive/base_type = &"PanelContainer"
+TitlebarInactive/styles/panel = SubResource("Titlebar_inactive")
+DesktopShortcut/base_type = &"Button"
+DesktopShortcut/styles/normal = SubResource("Shortcut_empty")
+DesktopShortcut/styles/hover = SubResource("Shortcut_hover")
+DesktopShortcut/styles/pressed = SubResource("Shortcut_hover")
+DesktopShortcut/styles/focus = SubResource("Shortcut_focus")
+DesktopCaption/base_type = &"Label"
+DesktopCaption/colors/font_color = Color(0.96, 0.94, 0.84, 1)
+DesktopCaption/colors/font_shadow_color = Color(0.14, 0.25, 0.28, 0.8)
+DesktopCaption/constants/shadow_offset_x = 1
+DesktopCaption/constants/shadow_offset_y = 1
+DesktopCaption/fonts/font = SubResource("Font_terminal")
+DesktopCaption/font_sizes/font_size = 14
+TitleText/base_type = &"Label"
+TitleText/colors/font_color = Color(1, 1, 1, 1)
+TitleText/fonts/font = SubResource("Font_title")
+MetricsText/base_type = &"Label"
+MetricsText/fonts/font = SubResource("Font_terminal")
+Statusbar/base_type = &"PanelContainer"
+Statusbar/styles/panel = SubResource("Status")
+Inset/base_type = &"PanelContainer"
+Inset/styles/panel = SubResource("Inset")
+MutedText/base_type = &"Label"
+MutedText/colors/font_color = Color(0.3, 0.3, 0.3, 1)
+SmallText/base_type = &"Label"
+SmallText/font_sizes/font_size = 12
+TerminalText/base_type = &"RichTextLabel"
+TerminalText/fonts/normal_font = SubResource("Font_terminal")
+TerminalText/font_sizes/normal_font_size = 14
+TerminalText/colors/default_color = Color(0.87451, 0.87451, 0.87451, 1)
+ProgressBar/styles/background = SubResource("Inset")
+ProgressBar/styles/fill = SubResource("Progress_fill")
+HSlider/styles/slider = SubResource("Scroll_track")
+HSlider/styles/grabber_area = SubResource("Progress_fill")
+HSlider/styles/grabber_area_highlight = SubResource("Progress_fill")
+HSlider/icons/grabber = ExtResource("11")
+HSlider/icons/grabber_highlight = ExtResource("11")
+HSlider/icons/grabber_disabled = ExtResource("11")
+VScrollBar/styles/scroll = SubResource("Scroll_track")
+VScrollBar/styles/grabber = SubResource("Scroll_grabber")
+VScrollBar/styles/grabber_highlight = SubResource("Scroll_grabber")
+VScrollBar/styles/grabber_pressed = SubResource("Scroll_grabber")
+HBoxContainer/constants/separation = 8
+VBoxContainer/constants/separation = 8
+GridContainer/constants/h_separation = 8
+GridContainer/constants/v_separation = 8

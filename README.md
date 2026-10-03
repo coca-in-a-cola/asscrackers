@@ -38,6 +38,12 @@ Exposure represents risk at your fictional compute relay: **+10 per job**, **+5 
 
 FX, SYNTH, MUTE and master volume remain available. Restart clears words, rules and session resources but keeps these presentation preferences.
 
+## Desktop
+
+The teal grid wallpaper surrounds four compact, fixed application windows. Existing Win95 borders and PNG icons use a pastel sage/lavender theme. Click a desktop shortcut or a titlebar to activate an application; **Read Me** opens help. Window dragging and closing are reserved for a later iteration.
+
+**FX** toggles the whole retro stack: subtle URSC-derived dithering followed by Flowerwall CRT scanlines, RGB mask, grain and color smearing. Wallpaper and pastel colors remain with FX off. Curvature, screen shake and bloom are disabled so small text and click targets stay aligned.
+
 ## Run and test
 
 Tested with **Godot 4.7.2**, Windows / GL Compatibility. Open `project.godot` and press **F5**.
@@ -46,6 +52,7 @@ Tested with **Godot 4.7.2**, Windows / GL Compatibility. Open `project.godot` an
 godot --path .
 godot --headless --path . --editor --import --quit
 godot --headless --path . --script res://tests/run_tests.gd
+godot --headless --path . --script res://tests/ui_components.gd
 godot --path . --script res://tests/ui_smoke.gd
 ```
 
@@ -59,8 +66,20 @@ Default window 1440×900; minimum 1024×720. UI tests capture screenshots to `us
 
 ## Code and scope
 
-`candidate_generator.gd` owns expansion and derivations; `dictionary_service.gd` owns words and capacity; `attack_engine.gd` owns comparisons and risk; `game_session.gd` owns timer and mission. `scripts/ui/main.gd` builds the Control-based screen.
+`candidate_generator.gd` owns expansion and derivations; `dictionary_service.gd` owns words and capacity; `attack_engine.gd` owns comparisons and risk; `game_session.gd` owns timer and mission. `scenes/main.tscn` composes the Windows 95 desktop from independent scenes. `scripts/ui/main.gd` connects signals and projects session state onto existing controls.
 
-One authored English mission; no network, external cracking process, saves or procedural targets. Generated audio and procedural portrait require no runtime services. Real-user usability, subjective audio and standalone export still need human validation.
+One authored English mission; no network, external cracking process, saves or procedural targets. Generated audio and the procedural background require no runtime services. The operator's self-portrait uses `avatars/avatar.png`, configured in `data/ui/operator.tres`. Real-user usability, subjective audio and standalone export still need human validation.
+
+## UI authoring
+
+- `scenes/ui/atoms/`: button, icon, checkbox, input, window background, titlebar, statusbar, modal layer.
+- `scenes/ui/components/`: window, fragment slot, fact card, dialog, desktop shortcut, retro effects.
+- `scenes/ui/panels/`: terminal, dictionary, operator, dossier, taskbar, help, result.
+- `assets/ui/windows95/game_theme.tres`: shared palette, fonts, texture borders, control states. Textures use Nearest; borders stretch independently of labels and icons.
+- `scripts/ui/components/desktop_windows.gd`: responsive fixed placement and active-window ownership, separated from application content for future drag/open/close behavior.
+- `assets/shaders/flowerwall/`, `assets/shaders/ursc/`: adapted third-party shaders and MIT licenses. Post-process parameters are authored in `retro_effects.tscn`; no editor plugin or extra Autoload is required.
+- `data/ui/operator.tres`: self-portrait and operator copy. `data/ui/help.tres`: tutorial and idle voices. Mission records remain in `data/targets/target_001.json`.
+
+Static UI is authored in `.tscn`; six dictionary slots persist for the entire scene lifetime. The only runtime UI instantiation is the variable-length dossier list, using `fact_card.tscn`. Components can run separately with F6. See [UI architecture and asset mapping](docs/ui-win95.md).
 
 [Product](PRD.MD) · [Rules](docs/mvp-spec.md) · [Hashcat references and math](docs/hashcat-model.md) · [Verification](docs/verification.md)

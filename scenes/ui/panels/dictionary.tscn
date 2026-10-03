@@ -1,0 +1,79 @@
+[gd_scene load_steps=8 format=3]
+[ext_resource type="PackedScene" path="res://scenes/ui/components/window.tscn" id="1"]
+[ext_resource type="Script" path="res://scripts/ui/components/dictionary_panel.gd" id="2"]
+[ext_resource type="PackedScene" path="res://scenes/ui/atoms/checkbox.tscn" id="3"]
+[ext_resource type="PackedScene" path="res://scenes/ui/atoms/input.tscn" id="4"]
+[ext_resource type="PackedScene" path="res://scenes/ui/atoms/button.tscn" id="5"]
+[ext_resource type="PackedScene" path="res://scenes/ui/components/fragment_slot.tscn" id="6"]
+[ext_resource type="Texture2D" path="res://assets/ui/windows95/icons/icons--icon-small-folder--2-722.png" id="7"]
+[node name="Dictionary" instance=ExtResource("1")]
+script = ExtResource("2")
+title = "Dictionary — fragments.txt"
+window_icon = ExtResource("7")
+[node name="Options" type="HBoxContainer" parent="Stack/Content"]
+layout_mode = 2
+[node name="Special" parent="Stack/Content/Options" instance=ExtResource("3")]
+unique_name_in_owner = true
+layout_mode = 2
+size_flags_horizontal = 3
+text = "Special characters"
+tooltip_text = "5 fragments × 6 rules: unchanged, suffix !, suffix ?, suffix #, a → @, a → @ plus !. Up to 1950 unique candidates."
+[node name="Slots" type="Label" parent="Stack/Content/Options"]
+unique_name_in_owner = true
+layout_mode = 2
+text = "0 / 6"
+[node name="Instruction" type="Label" parent="Stack/Content"]
+layout_mode = 2
+theme_type_variation = &"SmallText"
+text = "Words + numbers → all orders and subsets. Each fragment used at most once."
+autowrap_mode = 3
+[node name="Grid" type="GridContainer" parent="Stack/Content"]
+unique_name_in_owner = true
+layout_mode = 2
+columns = 3
+[node name="Slot1" parent="Stack/Content/Grid" instance=ExtResource("6")]
+layout_mode = 2
+slot_number = 1
+[node name="Slot2" parent="Stack/Content/Grid" instance=ExtResource("6")]
+layout_mode = 2
+slot_number = 2
+[node name="Slot3" parent="Stack/Content/Grid" instance=ExtResource("6")]
+layout_mode = 2
+slot_number = 3
+[node name="Slot4" parent="Stack/Content/Grid" instance=ExtResource("6")]
+layout_mode = 2
+slot_number = 4
+[node name="Slot5" parent="Stack/Content/Grid" instance=ExtResource("6")]
+layout_mode = 2
+slot_number = 5
+[node name="Slot6" parent="Stack/Content/Grid" instance=ExtResource("6")]
+layout_mode = 2
+slot_number = 6
+[node name="Rules" type="Label" parent="Stack/Content"]
+layout_mode = 2
+theme_type_variation = &"SmallText"
+text = "6 fragments: ≤1956 combinations. Special rules: 5 fragments, ≤1950."
+autowrap_mode = 3
+[node name="EntryLabel" type="Label" parent="Stack/Content"]
+layout_mode = 2
+theme_type_variation = &"SmallText"
+text = "Word or number / Enter to add"
+[node name="Entry" type="HBoxContainer" parent="Stack/Content"]
+layout_mode = 2
+[node name="Input" parent="Stack/Content/Entry" instance=ExtResource("4")]
+unique_name_in_owner = true
+layout_mode = 2
+[node name="Add" parent="Stack/Content/Entry" instance=ExtResource("5")]
+unique_name_in_owner = true
+layout_mode = 2
+text = "Add"
+[node name="Feedback" type="Label" parent="Stack/Content"]
+unique_name_in_owner = true
+layout_mode = 2
+custom_minimum_size = Vector2(0, 28)
+theme_type_variation = &"SmallText"
+text = "Collect meaningful fragments. Hashdog does the combining."
+autowrap_mode = 3
+[connection signal="text_submitted" from="Stack/Content/Entry/Input" to="." method="_on_input_submitted"]
+[connection signal="pressed" from="Stack/Content/Entry/Add" to="." method="_on_add_pressed"]
+[connection signal="toggled" from="Stack/Content/Options/Special" to="." method="_on_special_toggled"]

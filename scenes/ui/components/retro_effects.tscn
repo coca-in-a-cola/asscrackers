@@ -1,0 +1,57 @@
+[gd_scene load_steps=7 format=3]
+[ext_resource type="Shader" path="res://assets/shaders/ursc/desktop_dithering.gdshader" id="1"]
+[ext_resource type="Shader" path="res://assets/shaders/flowerwall/crt.gdshader" id="2"]
+[sub_resource type="ShaderMaterial" id="Dithering"]
+shader = ExtResource("1")
+shader_parameter/color_depth = 32.0
+shader_parameter/strength = 0.2
+[sub_resource type="FastNoiseLite" id="Noise"]
+seed = 2091
+frequency = 0.09
+[sub_resource type="NoiseTexture2D" id="NoiseTexture"]
+width = 128
+height = 128
+seamless = true
+noise = SubResource("Noise")
+[sub_resource type="ShaderMaterial" id="CRT"]
+shader = ExtResource("2")
+shader_parameter/effect_strength = 0.4
+shader_parameter/enable_slotmask = false
+shader_parameter/enable_gridmask = true
+shader_parameter/mask_strength = 0.08
+shader_parameter/pixel_size = 3.0
+shader_parameter/enable_grain = true
+shader_parameter/grain_strength = 0.025
+shader_parameter/enable_curving = false
+shader_parameter/curve_power = 1.0
+shader_parameter/enable_scanlines = true
+shader_parameter/scanlines_interval = 3.0
+shader_parameter/scanlines_opacity = 0.08
+shader_parameter/scanlines_thickness = 1.0
+shader_parameter/enable_smearing = true
+shader_parameter/smearing_strength = 0.12
+shader_parameter/noise_texture = SubResource("NoiseTexture")
+shader_parameter/enable_wiggle = false
+shader_parameter/wiggle = 0.0
+[node name="RetroEffects" type="CanvasLayer"]
+layer = 90
+[node name="SourceCopy" type="BackBufferCopy" parent="."]
+copy_mode = 2
+[node name="Dithering" type="ColorRect" parent="."]
+material = SubResource("Dithering")
+anchors_preset = 15
+anchor_right = 1.0
+anchor_bottom = 1.0
+grow_horizontal = 2
+grow_vertical = 2
+mouse_filter = 2
+[node name="DitheredCopy" type="BackBufferCopy" parent="."]
+copy_mode = 2
+[node name="CRT" type="ColorRect" parent="."]
+material = SubResource("CRT")
+anchors_preset = 15
+anchor_right = 1.0
+anchor_bottom = 1.0
+grow_horizontal = 2
+grow_vertical = 2
+mouse_filter = 2

@@ -1,0 +1,7 @@
+[gd_resource type="Resource" load_steps=2 format=3]
+[ext_resource type="Script" path="res://scripts/ui/data/desktop_copy.gd" id="1"]
+[resource]
+script = ExtResource("1")
+help_text = "1. Read the dossier. Type relevant words and numbers.\n2. Enter or Add saves each fragment. Use the small X to remove it.\n3. Run dictionary tries every order and every nonempty subset.\n\nExample: Neon + 20 + 88 can generate Neon2088.\nEach fragment is used at most once. Case stays as typed.\n\nSPECIAL CHARACTERS: five slots, six rules per combination:\nplain, add !, add ?, add #, a → @, a → @ plus !.\nNormal: up to 1956 candidates. Special: up to 1950.\n\nChecks run against a captured local SHA-256 hash. GPU is simulated.\nRelay Exposure: +10 per job, +5 if exhausted. At 100, traced."
+location = "PERM-2091 / LOCAL SIM"
+idle_voices = PackedStringArray("“I'm not a cat. I'm your burnout interface.” — ?", "“They updated the password policy. Not the people.” — ?", "“Your request matters to us. Especially the last one.” — ?")

@@ -1,0 +1,9 @@
+[gd_resource type="Resource" script_class="OperatorProfile" load_steps=3 format=3]
+[ext_resource type="Script" path="res://scripts/ui/data/operator_profile.gd" id="1"]
+[ext_resource type="Texture2D" path="res://avatars/avatar.png" id="2"]
+[resource]
+script = ExtResource("1")
+display_name = "YOU / LOCAL OPERATOR"
+portrait = ExtResource("2")
+filename = "self-portrait.png"
+description = "PERM-2091 · rented compute relay\nA familiar face. An unfamiliar shift."

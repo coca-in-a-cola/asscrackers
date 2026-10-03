@@ -1,0 +1,14 @@
+[gd_scene load_steps=3 format=3]
+[ext_resource type="PackedScene" path="res://scenes/ui/components/dialog.tscn" id="1"]
+[ext_resource type="Texture2D" path="res://assets/ui/windows95/icons/icons--icon-small-help--2-988.png" id="2"]
+[node name="Help" instance=ExtResource("1")]
+title = "Help — How to play"
+window_icon = ExtResource("2")
+[node name="Heading" parent="Stack/Content" index="0"]
+text = "Three steps. No commands to learn."
+[node name="Primary" parent="Stack/Content/Actions" index="0"]
+text = "OK"
+[node name="Secondary" parent="Stack/Content/Actions" index="1"]
+visible = false
+[editable path="Stack/Content/Actions/Primary"]
+[editable path="Stack/Content/Actions/Secondary"]

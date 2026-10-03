@@ -1,0 +1,38 @@
+[gd_scene load_steps=4 format=3]
+[ext_resource type="PackedScene" path="res://scenes/ui/components/window.tscn" id="1"]
+[ext_resource type="Script" path="res://scripts/ui/components/dialog.gd" id="2"]
+[ext_resource type="PackedScene" path="res://scenes/ui/atoms/button.tscn" id="3"]
+[node name="Dialog" instance=ExtResource("1")]
+custom_minimum_size = Vector2(0, 340)
+script = ExtResource("2")
+title = "Connection closed"
+closable = true
+[node name="Heading" type="Label" parent="Stack/Content"]
+unique_name_in_owner = true
+layout_mode = 2
+theme_override_font_sizes/font_size = 22
+text = "Connection closed"
+autowrap_mode = 3
+[node name="BodyFrame" type="PanelContainer" parent="Stack/Content"]
+layout_mode = 2
+size_flags_vertical = 3
+theme_type_variation = &"Inset"
+[node name="Body" type="RichTextLabel" parent="Stack/Content/BodyFrame"]
+unique_name_in_owner = true
+layout_mode = 2
+custom_minimum_size = Vector2(0, 220)
+selection_enabled = true
+bbcode_enabled = false
+[node name="Actions" type="HBoxContainer" parent="Stack/Content"]
+layout_mode = 2
+alignment = 2
+[node name="Primary" parent="Stack/Content/Actions" instance=ExtResource("3")]
+unique_name_in_owner = true
+layout_mode = 2
+text = "Restart mission"
+[node name="Secondary" parent="Stack/Content/Actions" instance=ExtResource("3")]
+unique_name_in_owner = true
+layout_mode = 2
+text = "View dictionary"
+[connection signal="pressed" from="Stack/Content/Actions/Primary" to="." method="_on_primary"]
+[connection signal="pressed" from="Stack/Content/Actions/Secondary" to="." method="_on_secondary"]

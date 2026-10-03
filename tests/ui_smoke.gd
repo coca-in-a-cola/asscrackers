@@ -21,8 +21,10 @@ func capture(label: String) -> void:
 		if argument.begins_with("--capture-dir="):
 			directory = argument.trim_prefix("--capture-dir=")
 	DirAccess.make_dir_recursive_absolute(directory)
-	var path := directory.path_join("asscrackers-" + label + ".png")
-	check(root.get_texture().get_image().save_png(path) == OK, "Screenshot " + label)
+	var webp := "--webp" in OS.get_cmdline_user_args()
+	var path := directory.path_join("asscrackers-" + label + (".webp" if webp else ".png"))
+	var image := root.get_texture().get_image()
+	check((image.save_webp(path) if webp else image.save_png(path)) == OK, "Screenshot " + label)
 	print("CAPTURE: " + path)
 
 func type_fragment(scene: Control, value: String) -> void:
@@ -43,6 +45,27 @@ func check_layout(scene: Control) -> void:
 	check(scene.special_toggle.get_global_rect().end.x < scene.dossier.get_global_rect().position.x, "Special toggle fits workspace")
 	for chip in scene.chip_grid.get_children():
 		check(chip.get_global_rect().end.y < scene.input.get_global_rect().position.y and chip.get_global_rect().end.x <= bounds.x, "Chip fits")
+	var applications := scene.get_node("Applications")
+	for application in applications.get_children():
+		var rect: Rect2 = application.get_global_rect()
+		check(rect.position.x >= 108 and rect.position.y >= 0 and rect.end.x <= bounds.x and rect.end.y < scene.footer.get_global_rect().position.y, "Application fits desktop: " + application.name)
+		for other in applications.get_children():
+			if application != other:
+				check(not rect.intersects(other.get_global_rect()), "Fixed windows do not obscure one another")
+	var terminal := scene.get_node("Applications/Terminal") as Control
+	var dictionary := scene.get_node("Applications/Dictionary") as Control
+	check(terminal.get_global_rect().end.y < dictionary.get_global_rect().position.y, "Terminal and dictionary have separate work areas")
+
+func click_control(control: Control) -> void:
+	var point := control.get_global_rect().get_center()
+	for pressed in [true, false]:
+		var event := InputEventMouseButton.new()
+		event.position = point
+		event.global_position = point
+		event.button_index = MOUSE_BUTTON_LEFT
+		event.pressed = pressed
+		root.push_input(event)
+		await process_frame
 
 func run() -> void:
 	var scene = load("res://scenes/main.tscn").instantiate()
@@ -51,10 +74,50 @@ func run() -> void:
 	await process_frame
 	check(scene.run_button.disabled and scene.chip_grid.get_child_count() == 6, "Empty six-slot state")
 	check(scene.dossier.find_children("*", "Button", true, false).is_empty(), "Dossier read-only")
+	check(scene.portrait.texture.resource_path == "res://avatars/avatar.png" and scene.portrait.stretch_mode == TextureRect.STRETCH_KEEP_ASPECT_CENTERED, "Operator self-portrait uses avatar without distortion")
+	check_layout(scene)
+	await click_control(scene.get_node("DesktopIcons/TerminalShortcut"))
+	check(scene.get_node("Applications").active_application == &"Terminal" and scene.get_node("Applications/Terminal").active, "Shortcut activates terminal through unobstructed desktop")
+	await click_control(scene.get_node("Applications/Dictionary/Stack/Titlebar"))
+	check(scene.get_node("Applications").active_application == &"Dictionary", "Titlebar activates fixed application")
+	scene.effects_toggle.button_pressed = false
+	await process_frame
+	check(not scene.get_node("RetroEffects").visible, "FX disables every post-processing pass")
+	await capture("desktop-clean")
+	scene.effects_toggle.button_pressed = true
+	check(scene.get_node("RetroEffects").visible, "FX restores post-processing")
+	var slot_ids: Array[int] = []
+	for slot in scene.chip_grid.get_children():
+		slot_ids.append(slot.get_instance_id())
+	await click_control(scene.get_node("DesktopIcons/HelpShortcut"))
+	await process_frame
+	check(scene.tutorial.visible and scene.tutorial.is_ancestor_of(root.gui_get_focus_owner()), "Help takes keyboard focus")
+	var tab := InputEventKey.new()
+	tab.keycode = KEY_TAB
+	tab.pressed = true
+	Input.parse_input_event(tab)
+	await process_frame
+	check(scene.tutorial.is_ancestor_of(root.gui_get_focus_owner()), "Tab stays inside modal")
+	var down := InputEventKey.new()
+	down.keycode = KEY_DOWN
+	down.pressed = true
+	Input.parse_input_event(down)
+	await process_frame
+	check(scene.tutorial.is_ancestor_of(root.gui_get_focus_owner()), "Arrow navigation stays inside modal")
+	await capture("help")
+	var escape := InputEventKey.new()
+	escape.keycode = KEY_ESCAPE
+	escape.pressed = true
+	Input.parse_input_event(escape)
+	await process_frame
+	check(not scene.tutorial.visible, "Escape closes help")
+	check(root.gui_get_focus_owner() == scene.input, "Closing help restores input focus")
 	await capture("desktop")
 	for word in ["Fluffy", "Barsik", "19", "90", "Kek", "lol"]:
 		type_fragment(scene, word)
 	check(scene.session.candidates.size() == 1956, "Six fragments produce full combination pool")
+	for i in scene.chip_grid.get_child_count():
+		check(scene.chip_grid.get_child(i).get_instance_id() == slot_ids[i], "Slot nodes persist across data updates")
 	scene.special_toggle.button_pressed = true
 	check(not scene.special_toggle.button_pressed and scene.session.dictionary.words.size() == 6 and scene.feedback.text.contains("Remove"), "Toggle rejected without deleting sixth fragment")
 	type_fragment(scene, "seventh")
@@ -76,7 +139,13 @@ func run() -> void:
 	await process_frame
 	check_layout(scene)
 	await capture("minimum")
+	root.size = Vector2i(1920, 1080)
+	await process_frame
+	await process_frame
+	check_layout(scene)
+	await capture("fullhd")
 	root.size = Vector2i(1440, 900)
+	await process_frame
 	await process_frame
 	scene.input.text = "unsaved"
 	scene.run_button.pressed.emit()

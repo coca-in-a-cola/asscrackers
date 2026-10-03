@@ -1,0 +1,35 @@
+[gd_scene load_steps=7 format=3]
+[ext_resource type="Script" path="res://scripts/ui/components/titlebar.gd" id="1"]
+[ext_resource type="Theme" path="res://assets/ui/windows95/game_theme.tres" id="2"]
+[ext_resource type="PackedScene" path="res://scenes/ui/atoms/icon.tscn" id="3"]
+[ext_resource type="PackedScene" path="res://scenes/ui/atoms/button.tscn" id="4"]
+[ext_resource type="Texture2D" path="res://assets/ui/windows95/control-button/utillity-icons--type-close-state-default--1-2335.png" id="5"]
+[ext_resource type="Texture2D" path="res://assets/ui/windows95/icons/icons--icon-small-folder--2-722.png" id="6"]
+[node name="Titlebar" type="PanelContainer"]
+theme = ExtResource("2")
+theme_type_variation = &"Titlebar"
+script = ExtResource("1")
+window_icon = ExtResource("6")
+mouse_filter = 1
+[node name="Row" type="HBoxContainer" parent="."]
+layout_mode = 2
+mouse_filter = 1
+theme_override_constants/separation = 6
+[node name="Icon" parent="Row" instance=ExtResource("3")]
+unique_name_in_owner = true
+layout_mode = 2
+[node name="Title" type="Label" parent="Row"]
+unique_name_in_owner = true
+layout_mode = 2
+size_flags_horizontal = 3
+theme_type_variation = &"TitleText"
+text = "Untitled"
+text_overrun_behavior = 3
+[node name="Close" parent="Row" instance=ExtResource("4")]
+unique_name_in_owner = true
+layout_mode = 2
+custom_minimum_size = Vector2(24, 20)
+tooltip_text = "Close window"
+text = ""
+icon = ExtResource("5")
+[connection signal="pressed" from="Row/Close" to="." method="_on_close_pressed"]

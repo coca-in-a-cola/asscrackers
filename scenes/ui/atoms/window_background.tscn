@@ -1,0 +1,10 @@
+[gd_scene load_steps=2 format=3]
+[ext_resource type="Theme" path="res://assets/ui/windows95/game_theme.tres" id="1"]
+[node name="WindowBackground" type="PanelContainer"]
+theme = ExtResource("1")
+theme_type_variation = &"WindowFrame"
+texture_filter = 1
+mouse_filter = 1
+[node name="Face" type="Panel" parent="."]
+layout_mode = 2
+mouse_filter = 2

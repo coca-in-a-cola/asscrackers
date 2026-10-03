@@ -1,0 +1,6 @@
+[gd_scene load_steps=3 format=3]
+[ext_resource type="PackedScene" path="res://scenes/ui/components/dialog.tscn" id="1"]
+[ext_resource type="Texture2D" path="res://assets/ui/windows95/icons/icons--icon-small-file--2-754.png" id="2"]
+[node name="Result" instance=ExtResource("1")]
+title = "hashdog.exe — Job result"
+window_icon = ExtResource("2")

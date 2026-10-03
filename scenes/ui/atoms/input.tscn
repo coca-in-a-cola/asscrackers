@@ -1,0 +1,8 @@
+[gd_scene load_steps=2 format=3]
+[ext_resource type="Theme" path="res://assets/ui/windows95/game_theme.tres" id="1"]
+[node name="Input" type="LineEdit"]
+custom_minimum_size = Vector2(120, 38)
+size_flags_horizontal = 3
+theme = ExtResource("1")
+texture_filter = 1
+placeholder_text = "A name, a year, a word..."
