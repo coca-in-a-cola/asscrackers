@@ -9,25 +9,25 @@ script = ExtResource("2")
 title = "Self-portrait — self-portrait.png"
 window_icon = ExtResource("4")
 profile = ExtResource("3")
-[node name="Row" type="HBoxContainer" parent="Stack/Content"]
+[node name="Row" type="HBoxContainer" parent="Stack/ContentMargin/Content"]
 layout_mode = 2
-[node name="PortraitFrame" type="PanelContainer" parent="Stack/Content/Row"]
+[node name="PortraitFrame" type="PanelContainer" parent="Stack/ContentMargin/Content/Row"]
 layout_mode = 2
 theme_type_variation = &"Inset"
-[node name="Portrait" parent="Stack/Content/Row/PortraitFrame" instance=ExtResource("5")]
+[node name="Portrait" parent="Stack/ContentMargin/Content/Row/PortraitFrame" instance=ExtResource("5")]
 unique_name_in_owner = true
 layout_mode = 2
 custom_minimum_size = Vector2(108, 108)
-[node name="Details" type="VBoxContainer" parent="Stack/Content/Row"]
+[node name="Details" type="VBoxContainer" parent="Stack/ContentMargin/Content/Row"]
 layout_mode = 2
 size_flags_horizontal = 3
 size_flags_vertical = 4
-[node name="Operator" type="Label" parent="Stack/Content/Row/Details"]
+[node name="Operator" type="Label" parent="Stack/ContentMargin/Content/Row/Details"]
 unique_name_in_owner = true
 layout_mode = 2
 text = "YOU / LOCAL OPERATOR"
 autowrap_mode = 3
-[node name="Description" type="Label" parent="Stack/Content/Row/Details"]
+[node name="Description" type="Label" parent="Stack/ContentMargin/Content/Row/Details"]
 unique_name_in_owner = true
 layout_mode = 2
 theme_type_variation = &"SmallText"

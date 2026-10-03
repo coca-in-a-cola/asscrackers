@@ -1,0 +1,32 @@
+[gd_scene load_steps=4 format=3]
+[ext_resource type="PackedScene" path="res://scenes/ui/components/window.tscn" id="1"]
+[ext_resource type="Script" path="res://scripts/ui/components/intel_detail.gd" id="2"]
+[ext_resource type="PackedScene" path="res://scenes/ui/atoms/button.tscn" id="3"]
+[node name="IntelDetail" instance=ExtResource("1")]
+script = ExtResource("2")
+closable = true
+active = true
+custom_minimum_size = Vector2(340, 300)
+title = "G-D's Eye / source"
+[node name="InfoTitle" type="Label" parent="Stack/ContentMargin/Content"]
+unique_name_in_owner = true
+layout_mode = 2
+theme_type_variation = &"SmallText"
+autowrap_mode = 3
+[node name="InfoBody" type="RichTextLabel" parent="Stack/ContentMargin/Content"]
+unique_name_in_owner = true
+layout_mode = 2
+size_flags_vertical = 3
+custom_minimum_size = Vector2(0, 140)
+selection_enabled = true
+bbcode_enabled = false
+[node name="Query" parent="Stack/ContentMargin/Content" instance=ExtResource("3")]
+unique_name_in_owner = true
+layout_mode = 2
+text = "Query source"
+[node name="InfoStatus" type="Label" parent="Stack/ContentMargin/Content"]
+unique_name_in_owner = true
+layout_mode = 2
+custom_minimum_size = Vector2(0, 30)
+theme_type_variation = &"SmallText"
+autowrap_mode = 3

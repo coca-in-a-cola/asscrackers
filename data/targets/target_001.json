@@ -1,19 +1,21 @@
 {
-  "schema_version": 2,
+  "schema_version": 3,
   "id": "target_001",
   "display_name": "ALEX / LEXA",
-  "brief": "A captured authentication hash belongs to an ANUS INDUSTRIES HR account. Read the dossier, collect password fragments, and crack the hash on your rented compute relay. Keep Exposure below 100.",
+  "login": "lexa@anus.industries",
+  "service_id": "anus_hr",
+  "brief": "Access the HR portal and retrieve the layoff order. The account is known; the password is not. Query G-D's Eye for leads, then send password candidates through your botnet. Recon and login requests share one Exposure budget.",
   "facts": [
-    {"id": "pet", "label": "His favourite person isn't a person", "value": "Barsik, the cat", "source": "SOCIAL / @lexa_never_sleeps", "note": "“All my important accounts are named after Barsik. People betray you. A cat at least makes eye contact.” His previous cat was called Fluffy."},
-    {"id": "birth_year", "label": "Employee record", "value": "Born 17 April 1990", "source": "HR / personnel archive", "note": "Alex uses his full birth year in memorable numbers. Reason for employment: “Not dead yet.”"},
-    {"id": "nickname", "label": "Public handle", "value": "Lexa", "source": "SOCIAL / profile", "note": "Human Remains Manager. “We are not a family. You can't downsize your family every quarter.”"},
-    {"id": "leaked", "label": "An old password", "value": "Fluffy2010!", "source": "BREACH / 2023 archive", "note": "No longer valid. Notice the pattern: capitalized name, four-digit year, exclamation mark. Fluffy has since been promoted to cloud storage."},
-    {"id": "habit", "label": "A message to IT", "value": "“Now I replace lowercase a with @. Name first, year next, ! at the end. Secure enough?”", "source": "CHAT / #security-awareness", "note": "Posted after his last password change. IT replied: “That's my thirteenth reason to quit.”"}
+    {"id": "nickname", "label": "Public profile", "value": "Lexa / @lexa_never_sleeps", "source": "SOCIAL / profile lookup", "note": "Human Remains Manager. His profile links a pet album and a recycled breach record. 'We are not a family. You can't downsize your family every quarter.'", "cost": 5, "requires": [], "position": [245, 30]},
+    {"id": "birth_year", "label": "Personnel record", "value": "Born 17 April 1990", "source": "HR / personnel archive", "note": "Alex uses his full birth year in memorable numbers. Reason for employment: 'Not dead yet.'", "cost": 8, "requires": [], "position": [245, 280]},
+    {"id": "pet", "label": "Pet album", "value": "Barsik, the current cat", "source": "SOCIAL / linked album", "note": "'All my important accounts are named after Barsik. People betray you. A cat at least makes eye contact.' His previous cat was called Fluffy. The album links an IT conversation.", "cost": 8, "requires": ["nickname"], "position": [455, 150]},
+    {"id": "leaked", "label": "Old breach", "value": "Fluffy2010!", "source": "BREACH / 2023 archive", "note": "No longer valid. Notice the pattern: capitalized name, four-digit year, exclamation mark. Fluffy has since been promoted to cloud storage.", "cost": 12, "requires": ["nickname"], "position": [455, 30]},
+    {"id": "habit", "label": "IT conversation", "value": "'Now I replace lowercase a with @. Name first, year next, ! at the end. Secure enough?'", "source": "CHAT / #security-awareness", "note": "Cross-referencing the pet album and breach record identifies this message after his last password change. IT replied: 'That's my thirteenth reason to quit.'", "cost": 12, "requires": ["pet", "leaked"], "position": [675, 85]},
+    {"id": "hobby", "label": "After-hours club", "value": "Corporate bowling: team name 'Dead Pins'", "source": "SOCIAL / linked club", "note": "The team slogan is 'Strike first, outsource later.' No evidence that this name appears in his current password.", "cost": 6, "requires": ["nickname"], "position": [455, 280]}
   ],
   "solution": {
     "password": "B@rsik1990!",
     "fact_ids": ["pet", "birth_year", "leaked", "habit"],
-    "hint_fact_id": "pet",
-    "explanation": "His current cat is Barsik. Add his birth year, 1990, and follow the old password's capital letter and !. The message to IT explains a → @. You cracked a habit, not a cipher."
+    "explanation": "His current cat is Barsik. Add his birth year, 1990, and follow the old password's capital letter and !. The IT conversation explains a → @. You cracked a habit, not a cipher."
   }
 }

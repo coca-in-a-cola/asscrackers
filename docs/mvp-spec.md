@@ -1,10 +1,16 @@
-# MVP v4 — fragment dictionary and generated candidates
+# MVP v5 — windowed recon and simulated botnet
 
 Product: [PRD](../PRD.MD). Technical rationale: [hashcat model](hashcat-model.md).
 
+## Entry and audio
+
+F5 opens `boot.tscn`, displaying only the silent start screen. Its ordered credits name mice-seller, GPT6.1 Sol, Google Image Pro and Karl Casey @ White Bat audio. A non-echo key press, mouse click, touch press or gamepad button creates the desktop and starts the MP3 soundtrack in the same input callback. Mouse motion, wheel, release and key echo do not enter. The entry key's repeats/release are consumed before normal desktop typing resumes.
+
+Music plays Hackers → New Beginnings → The Saga → repeat with 0.75-second equal-power crossfades. Music pauses both players and their transition tween; re-enabling resumes rather than restarts. Mute/volume affect both Music and SFX independently of playback. Restart leaves playback and preferences intact, with no entry-screen replay. The old procedural music generator is removed; short action tones remain. Details: [startup and audio](startup-audio.md).
+
 ## Input and slots
 
-One ordered dictionary, entered manually. Enter saves a fragment; × removes it. Dossier content has no action buttons. Duplicate exact fragments are no-ops, case variants are distinct. Trim outer whitespace, preserve inner spaces, reject blank/multiline/tabbed fragments and lengths above 64 characters. Failed insertion keeps the draft.
+One ordered dictionary, entered manually. Enter or Add saves a fragment; × removes it. Recon nodes purchase information but never insert fragments automatically. Duplicate exact fragments are no-ops, case variants are distinct. Trim outer whitespace, preserve inner spaces, reject blank/multiline/tabbed fragments and lengths above 64 characters. Failed insertion keeps the draft.
 
 Normal mode has six slots. **Special characters** enables six fixed transformation rules and reduces capacity to five. If six slots are occupied, enabling the checkbox fails with an explanation and leaves both the dictionary and checkbox unchanged. Never silently delete a word. Turning rules off restores the sixth slot without changing any fragment. With rules enabled, the sixth visual cell is a non-editable RULE SLOT.
 
@@ -42,48 +48,58 @@ Generated: Barsik + 19 + 90 + Fluffy → Barsik1990Fluffy
 
 ## Attack model
 
-The local fixture represents a captured authentication hash. On mission load, derive SHA-256 from the authored secret; the engine compares each generated candidate's SHA-256 against that hash. The public dossier never receives the solution object. This is a game fixture, not secret storage protection.
+The task supplies login and service ID. Catalog data supplies the service display name and positive finite time coefficient. Login attempts are simulated locally using a deterministic password comparison oracle; no real requests or hashcat process are sent. Public mission data contains only known identity/task/account, with no fact contents or solution object.
 
-The implementation uses Godot's CPU hashing and timed batches; the UI explicitly says **GPU simulation**. It launches no real hashcat process and sends no login requests.
+Snapshot the complete generated pool at launch. Let N be its unique count and k the service coefficient: duration = 60 × k × N / 1956 seconds. At elapsed time t, at most floor(t × 1956 / (60 × k)) requests are due. No artificial minimum duration is applied. Emit sampled terminal responses, counting every actual request. Stop immediately at success, trace, user Stop or pool exhaustion.
 
-Snapshot the complete generated pool at launch. Each 100 ms tick checks up to 64 candidates; stop immediately at a match or pool exhaustion. The terminal shows one labelled sample per batch, not a fabricated line for every candidate. Progress counts every actual comparison. Large jobs remain responsive and normally take about three seconds at the full pool size; wall-clock timing is presentation pacing, not a hardware benchmark.
+GameSession drives this clock from process deltas independently of presentation visibility. Tests drive explicit deltas instead of waiting one minute. At coefficient 1, a full unmatched 1956-request pass is incomplete at 59.999 seconds and complete at 60. Runtime display of completion follows on the next processed frame.
 
 ## Risk and state
 
-States: READY, RUNNING, WON, LOST. Initially READY, no fragments, no rules, no checked hashes, Exposure 0.
+States: READY, RUNNING, WON, LOST. Initially READY, empty dictionary, rules off, no sent requests, Exposure 0.
 
-- Accepted nonempty launch: +10 Exposure and one job recorded.
+- Accepted nonempty launch: +2 Exposure and one job recorded.
 - If that reaches 100: TRACE before checking any candidate.
-- Each local comparison increments checked-hash statistics, with no per-candidate Exposure.
+- Each sent request increments request statistics and costs 18/1956 Exposure. Charge first; reaching 100 traces the operation before a successful reply can be accepted.
 - Match: SUCCESS, no exhaustion penalty, stop all remaining work.
-- Whole pool checked with no match: +5 Exposure once. Return to READY unless that reaches 100, in which case TRACE.
+- Whole pool checked with no match: return to READY without any extra penalty.
+- Stop returns to READY and preserves spent Exposure, fragments and request statistics. Unsent requests have no cost.
 - Empty/invalid/concurrent launch, rejected input and toggles: no cost.
 - Editing after exhaustion is allowed. A new run checks the newly generated pool from its beginning; previously tested candidates are not cached across runs.
 
-**No ten-request limit and no RATE_LIMIT result remain.** The 1956 bound limits a job's search space; it is not a dwindling mission request account. Fictional Exposure belongs to the compute relay, not to the physics of offline password hashing.
+One shared fixed-point ledger serves recon and botnet work: one point = 1956 units, each request = 18 units, limit = 195600 units. A full baseline pass costs exactly 20. The 1956 bound limits a job's search space; there is no ten-request limit or RATE_LIMIT result.
 
-Examples: first successful job costs 10 Exposure regardless of the match index. A failed job then a successful one costs 25. Six exhausted jobs cost 90; launching a seventh reaches TRACE before any new comparison.
+## Paid recon
+
+Mission schema 3 stores fact IDs, generic source labels, costs, authored graph positions and prerequisite IDs. Validate integer costs from 1 to 99, existing unique dependencies, valid coordinates and graph acyclicity. Nodes become discoverable only when all their prerequisites have been retrieved. The target identity is free.
+
+A discoverable leaf opens an adjacent subwindow with its price and Query button. Purchase charges its price once, reveals its value/note and may expose child nodes. Repeat reading is free. An intercepted query reaching 100 ends the mission without revealing its reply. Recon is allowed during RUNNING, sharing the attack ledger, but paid operations stop after WON/LOST. No automatic Exposure-threshold hint reveals unpaid content.
 
 ## UI
 
 Keep the chip workspace and large input from v3. Relabel them as fragments. Show actual unique pool count, a Special characters checkbox, reserved rule cell and live checked/total progress. Tooltips/help explain rules and the two comparable upper bounds.
 
-RUN DICTIONARY emits `hashdog run --combine`, plus `--specials` when enabled. These are fictional presentation commands, not hashcat-compatible syntax. An unsaved draft blocks launch for free rather than being silently ignored.
+RUN DICTIONARY emits `hashdog botnet --login <known account> --combine`, plus `--specials` when enabled. These are presentation commands. An unsaved draft blocks launch for free rather than being silently ignored.
 
-Maintain 1440×900 default and 1024×720 minimum, visible chips/input/footer, read-only scrollable dossier, English text, optional FX and generated audio. One-time clue at Exposure ≥60 remains, except on terminal-result transitions.
+Applications have fixed dimensions, X, titlebar dragging and persistent state/position when reopened. Shortcuts and taskbar buttons open or activate them. Window movement is clamped to the usable desktop. Closing a terminal never stops its job. The always-accessible two-row taskbar shows Exposure, remaining time and Stop. Content margins are 12px horizontal and 10px vertical. Maintain 1440×900 default, 1024×720 minimum, English copy and optional FX/audio. Help/results remain modal; recon details are nonmodal and leaf-anchored.
 
 ## Results and reset
 
-SUCCESS shows the recovered password, authored reasoning, actual source fragments, applied rule, hashes checked, jobs and Exposure. TRACE shows relay detection without revealing the password. An exhausted pool shows terminal feedback, not a defeat modal.
+SUCCESS shows password, reasoning, actual fragments/rule, sent requests, jobs and Exposure. TRACE shows operation detection without revealing the password. Exhaustion is feedback, not defeat.
 
-Restart stops the timer, invalidates old callbacks, clears fragments and generated candidates, turns special rules off and resets engine/hints. Audio/FX preferences persist. The schema-2 mission remains compatible; its brief describes the captured-hash scenario.
+Restart invalidates old work generations, clears fragments/candidates, resets bought information and Exposure, and turns rules off. Audio/FX preferences and application positions persist. The first mission uses schema 3 and the named ANUS HR service at coefficient 1.
 
 ## Code ownership
 
 - `candidate_generator.gd`: bounded, deterministic, target-independent expansion and derivation metadata.
 - `dictionary_service.gd`: fragment storage and transactional mode/capacity changes.
-- `attack_engine.gd`: hash comparisons, complete pool snapshot, batch stepping, per-job risk.
-- `game_session.gd`: cache regeneration, readiness guards, timer, mission and events.
-- `main.gd`: fragment chips, rule control, actual counts and sampled output.
+- `exposure_budget.gd`: single exact risk ledger.
+- `intel_service.gd`: discovery prerequisites, purchases and public recon snapshots.
+- `service_catalog.gd`: named service/time coefficient resolution.
+- `attack_engine.gd`: request snapshot, model clock, stop/match/trace.
+- `game_session.gd`: mission lifecycle, runtime clock, readiness guards and events.
+- `main.gd`: presentation projections and requests, no domain state ownership.
+- `boot.gd` / `start_screen.gd`: entry lifecycle, credits and accepted-input isolation.
+- `game_audio.gd`: soundtrack and action-audio ownership, independent of mission state.
 
 Autogeneration is the intended game mechanic. The player supplies semantic clues, not exact concatenation syntax.

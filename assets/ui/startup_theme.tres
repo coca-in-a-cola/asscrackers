@@ -1,0 +1,52 @@
+[gd_resource type="Theme" load_steps=5 format=3]
+
+[sub_resource type="SystemFont" id="Mono"]
+font_names = PackedStringArray("Consolas", "DejaVu Sans Mono", "Liberation Mono")
+font_hinting = 2
+
+[sub_resource type="SystemFont" id="Display"]
+font_names = PackedStringArray("Consolas", "DejaVu Sans Mono", "Liberation Mono")
+font_weight = 700
+font_hinting = 2
+
+[sub_resource type="StyleBoxFlat" id="Rule"]
+bg_color = Color(0.21, 0.42, 0.46, 0.5)
+
+[sub_resource type="StyleBoxEmpty" id="Text"]
+
+[resource]
+default_font = SubResource("Mono")
+default_font_size = 16
+Label/colors/font_color = Color(0.9, 0.95, 0.95, 1)
+Label/styles/normal = SubResource("Text")
+BootSmall/base_type = &"Label"
+BootSmall/font_sizes/font_size = 13
+BootSmall/colors/font_color = Color(0.52, 0.65, 0.69, 1)
+BootAccent/base_type = &"Label"
+BootAccent/colors/font_color = Color(0.39, 0.96, 0.85, 1)
+BootTitle/base_type = &"Label"
+BootTitle/fonts/font = SubResource("Display")
+BootTitle/font_sizes/font_size = 104
+BootTitle/colors/font_shadow_color = Color(0.39, 0.96, 0.85, 0.16)
+BootTitle/constants/shadow_offset_x = 3
+BootTitle/constants/shadow_offset_y = 3
+BootTitle/constants/line_spacing = -12
+BootCredit/base_type = &"Label"
+BootCredit/font_sizes/font_size = 23
+BootAuthor/base_type = &"Label"
+BootAuthor/fonts/font = SubResource("Display")
+BootAuthor/font_sizes/font_size = 32
+BootAuthor/colors/font_color = Color(0.39, 0.96, 0.85, 1)
+BootMusic/base_type = &"Label"
+BootMusic/font_sizes/font_size = 20
+BootMusic/colors/font_color = Color(0.97, 0.77, 0.43, 1)
+BootPrompt/base_type = &"Label"
+BootPrompt/fonts/font = SubResource("Display")
+BootPrompt/font_sizes/font_size = 26
+BootPrompt/colors/font_color = Color(0.39, 0.96, 0.85, 1)
+HSeparator/constants/separation = 2
+HSeparator/styles/separator = SubResource("Rule")
+Palette/colors/background_top = Color(0.025, 0.05, 0.075, 1)
+Palette/colors/background_bottom = Color(0.045, 0.075, 0.11, 1)
+Palette/colors/cyan = Color(0.39, 0.96, 0.85, 1)
+Palette/colors/rose = Color(0.93, 0.43, 0.59, 1)

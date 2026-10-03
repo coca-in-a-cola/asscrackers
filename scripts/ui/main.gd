@@ -18,20 +18,20 @@ extends Control
 @onready var chip_grid: GridContainer = %Dictionary.chip_grid
 @onready var feedback: Label = %Dictionary.feedback
 @onready var forecast_label: Label = %Terminal.forecast_label
-@onready var dossier: VBoxContainer = %Dossier.dossier
+@onready var dossier: Control = %Dossier.dossier
 @onready var dossier_scroll: ScrollContainer = %Dossier.dossier_scroll
 @onready var voice: Label = %Dossier.voice
 @onready var modal: Control = %ResultOverlay
 @onready var modal_title: Label = %Result.heading
 @onready var modal_body: RichTextLabel = %Result.body
 @onready var tutorial: Control = %HelpOverlay
-@onready var footer: HBoxContainer = %Taskbar.footer
+@onready var footer: VBoxContainer = %Taskbar.footer
 @onready var result_button: Button = %Taskbar.result_button
 @onready var effects_toggle: CheckBox = %Taskbar.effects_toggle
 
 var chip_labels: Array[Label] = []
 var remove_buttons: Array[Button] = []
-var fact_markers: Dictionary = {}
+var selected_intel := ""
 var effects_enabled := true
 var mission_ready := false
 var log_lines: Array[Dictionary] = []
@@ -45,9 +45,10 @@ func _ready() -> void:
 	_update_canvas_size()
 	session.message.connect(_log)
 	session.changed.connect(_refresh)
-	session.hint.connect(_on_hint)
+	session.intel_changed.connect(_refresh_intel)
 	session.ended.connect(_on_end)
 	run_button.pressed.connect(_run_dictionary)
+	%Terminal.stop_button.pressed.connect(_stop_attack)
 	log_view.gui_input.connect(_log_scroll_input)
 	log_view.get_v_scroll_bar().gui_input.connect(_log_scroll_input)
 	%Help.body.text = copy.help_text
@@ -74,7 +75,7 @@ func _activate_application(application_name: StringName) -> void:
 	if application_name == &"Help":
 		_show_help()
 		return
-	%Applications.focus_application(application_name)
+	%Applications.open_application(application_name)
 	if application_name == &"Dictionary" and input.editable:
 		input.grab_focus()
 	elif application_name == &"Terminal":
@@ -82,8 +83,75 @@ func _activate_application(application_name: StringName) -> void:
 	elif application_name == &"Dossier":
 		dossier_scroll.grab_focus()
 
+func _refresh_windows() -> void:
+	if not is_instance_valid(%Taskbar):
+		return
+	%Taskbar.update_windows(%Applications)
+	if not %Dossier.visible or %Applications.active_application != &"Dossier":
+		%IntelDetail.hide()
+
+func _on_window_moved(application_name: StringName) -> void:
+	if application_name == &"Dossier":
+		_position_intel_popup()
+
+func _refresh_intel() -> void:
+	%Dossier.apply_snapshot(session.recon_snapshot())
+	_refresh_intel_popup()
+
+func _select_intel(id: String) -> void:
+	selected_intel = id
+	%Applications.focus_application(&"Dossier")
+	dossier.select_node(id)
+	%IntelDetail.show()
+	_refresh_intel_popup()
+	_position_intel_popup()
+	_settle_intel_popup()
+
+func _settle_intel_popup() -> void:
+	# Reflow wrapped source labels at the final width before fixing the height.
+	await get_tree().process_frame
+	await get_tree().process_frame
+	if not %IntelDetail.visible:
+		return
+	%IntelDetail.size = Vector2(340, 300).max(%IntelDetail.get_combined_minimum_size())
+	_position_intel_popup()
+
+func _refresh_intel_popup() -> void:
+	if selected_intel.is_empty() or not %IntelDetail.visible:
+		return
+	for fact in session.recon_snapshot():
+		if fact.id == selected_intel:
+			%IntelDetail.apply(fact, session.budget.value, session.engine.phase in ["READY", "RUNNING"])
+			%IntelDetail.size = Vector2(340, 300).max(%IntelDetail.get_combined_minimum_size())
+			return
+	%IntelDetail.hide()
+
+func _position_intel_popup() -> void:
+	if not is_instance_valid(%IntelDetail) or not %IntelDetail.visible or selected_intel.is_empty():
+		return
+	var rect: Rect2 = dossier.node_rect(selected_intel)
+	var popup_size: Vector2 = %IntelDetail.size
+	var point := Vector2(rect.end.x + 10, rect.position.y)
+	if point.x + popup_size.x > size.x - 8:
+		point.x = rect.position.x - popup_size.x - 10
+	%IntelDetail.position = point.clamp(Vector2(8, 8), Vector2(maxf(8, size.x - popup_size.x - 8), maxf(8, %Taskbar.position.y - popup_size.y - 8)))
+
+func _query_intel(id: String) -> void:
+	var response: Dictionary = session.request_intel(id)
+	if response.get("purchased", false):
+		audio.play("hint")
+	_refresh_intel_popup()
+
+func _stop_attack() -> void:
+	session.stop_attack()
+
 func _set_music(enabled: bool) -> void:
 	audio.set_music(enabled)
+	%Taskbar.music_toggle.set_pressed_no_signal(audio.music_enabled)
+
+func start_audio() -> void:
+	# Called synchronously by the entry scene's accepted user gesture.
+	_set_music(true)
 
 func _set_muted(enabled: bool) -> void:
 	audio.set_muted(enabled)
@@ -92,6 +160,7 @@ func _set_volume(value: float) -> void:
 	audio.set_level(value)
 
 func _show_help() -> void:
+	%Applications.cancel_drag()
 	tutorial.show()
 	%Help.active = true
 	%Help.focus_primary()
@@ -101,6 +170,8 @@ func _hide_help() -> void:
 	_restore_focus()
 
 func _show_result() -> void:
+	%Applications.cancel_drag()
+	%IntelDetail.hide()
 	modal.show()
 	%Result.active = true
 	%Result.focus_primary()
@@ -114,7 +185,7 @@ func _restore_focus() -> void:
 		%Help.focus_primary()
 	elif modal.visible:
 		%Result.focus_primary()
-	elif input.editable:
+	elif input.editable and %Dictionary.visible:
 		input.grab_focus()
 	else:
 		result_button.grab_focus()
@@ -125,6 +196,8 @@ func _unhandled_key_input(event: InputEvent) -> void:
 			_hide_help()
 		elif modal.visible:
 			_hide_result()
+		elif %IntelDetail.visible:
+			%IntelDetail.hide()
 		else:
 			return
 		accept_event()
@@ -133,6 +206,8 @@ func _restart() -> void:
 	modal.hide()
 	result_button.hide()
 	tutorial.hide()
+	%IntelDetail.hide()
+	selected_intel = ""
 	mission_ready = false
 	var loaded: Dictionary = session.restart()
 	log_lines.clear()
@@ -151,13 +226,15 @@ func _restart() -> void:
 		return
 	mission_ready = true
 	%Dossier.apply_mission(session.public_mission)
-	fact_markers = %Dossier.fact_markers
-	_log("Captured SHA-256 hash / account lexa / offline GPU simulation", "system")
-	_log("Add fragments. Hashdog combines them automatically.", "success")
-	_set_feedback("Read the dossier. Add names and numbers separately; hashdog does the combining.")
-	voice.text = "“The cat is not on your payroll.\nNeither is the voice in your head.” — ?"
+	%Terminal.target_label.text = session.service.display_name + "\nAccount: " + session.public_mission.login + " / time coefficient ×%.2f" % session.service.time_coefficient
+	_log("TARGET / %s / %s" % [session.service.display_name, session.public_mission.login], "system")
+	_log("24 botnet relays ready. Recon queries and login attempts share Exposure.", "success")
+	_log(session.public_mission.brief, "system")
+	_set_feedback("Investigate G-D's Eye. Add fragments; a smaller pool costs less.")
+	voice.text = "“Every source leaves a footprint. So does every login.” — ?"
+	_refresh_intel()
 	_refresh()
-	input.grab_focus()
+	_restore_focus()
 
 func _submit_fragment(value: String) -> Dictionary:
 	var response: Dictionary = session.add_fragment(value)
@@ -188,10 +265,10 @@ func _run_dictionary() -> void:
 		_set_feedback("You have an unsaved fragment. Press Enter to save it, or clear the input first.", true)
 		input.grab_focus()
 		return
-	_log("$ hashdog run --combine" + (" --specials" if session.dictionary.special_characters else ""), "command")
+	_log("$ hashdog botnet --login " + session.public_mission.login + " --combine" + (" --specials" if session.dictionary.special_characters else ""), "command")
 	var response: Dictionary = session.start_attack()
 	_log(response.message, "system" if response.ok else "error")
-	_set_feedback("Checking generated candidates…" if session.engine.phase == "RUNNING" else response.message, not response.ok)
+	_set_feedback("Botnet running. Closing its window does not stop requests." if session.engine.phase == "RUNNING" else response.message, not response.ok)
 	if response.ok and session.engine.phase == "RUNNING":
 		audio.play("run")
 
@@ -204,27 +281,36 @@ func _refresh() -> void:
 		return
 	var model = session.engine
 	var can_edit: bool = mission_ready and model.phase == "READY"
-	exposure_label.text = "EXPOSURE  %02d / 100" % model.exposure
+	exposure_label.text = "EXPOSURE  %.1f / 100" % model.exposure
 	exposure_label.add_theme_color_override("font_color", _color("error" if model.exposure >= 70 else "text"))
 	exposure_bar.value = model.exposure
 	budget_label.text = "CHECKED %d / %d" % [model.index, model.queue.size()] if model.phase in ["RUNNING", "WON"] else "POOL %d / 1956" % session.candidates.size()
 	state_label.text = model.phase
 	state_label.add_theme_color_override("font_color", _color("error" if model.phase == "LOST" else "accent"))
+	%Taskbar.exposure_label.text = exposure_label.text
+	%Taskbar.exposure_label.add_theme_color_override("font_color", _color("error" if model.exposure >= 70 else "text"))
+	%Taskbar.exposure_bar.value = model.exposure
+	%Taskbar.remaining_label.text = "%.2f s left" % model.remaining if model.phase == "RUNNING" else "BOTNET IDLE"
+	%Taskbar.stop_button.disabled = model.phase != "RUNNING"
+	%Terminal.stop_button.disabled = model.phase != "RUNNING"
 	input.editable = can_edit
 	%Dictionary.add_button.disabled = not can_edit
 	special_toggle.disabled = not can_edit
 	special_toggle.set_pressed_no_signal(session.dictionary.special_characters)
 	run_button.disabled = not can_edit or session.dictionary.words.is_empty()
-	run_button.text = "Testing %d / %d" % [model.index, model.queue.size()] if model.phase == "RUNNING" else "Run dictionary"
+	run_button.text = "Running…" if model.phase == "RUNNING" else "Run dictionary"
 	slots_label.text = "%d / %d" % [session.dictionary.words.size(), session.dictionary.capacity()]
 	if can_edit:
-		forecast_label.text = "%d candidates · %s · +10 exposure/job, +5 exhausted" % [session.candidates.size(), "6 special rules" if session.dictionary.special_characters else "all fragment orders"]
-		if model.exposure >= 90:
-			forecast_label.text = "TRACE WARNING: starting another job reaches 100 Exposure."
+		var preview: Dictionary = session.forecast()
+		forecast_label.text = "%d candidates / %.3f s / up to +%.2f EXP" % [session.candidates.size(), preview.duration, preview.cost]
+		if model.exposure + preview.cost >= 100:
+			forecast_label.text = "TRACE WARNING / " + forecast_label.text
 	elif model.phase == "RUNNING":
-		forecast_label.text = "GPU SIM · %d / %d checked · terminal shows batch samples" % [model.index, model.queue.size()]
+		forecast_label.text = "BOTNET / %d/%d sent / %.2f s left / Stop saves unsent requests" % [model.index, model.queue.size(), model.remaining]
 	else:
 		forecast_label.text = "Session closed. Restart to try again."
+	forecast_label.tooltip_text = forecast_label.text
+	_refresh_intel_popup()
 	_refresh_chips()
 
 func _refresh_chips() -> void:
@@ -264,7 +350,7 @@ func _log(value: String, kind: String = "info") -> void:
 	_log_scroll_ticket += 1
 	_settle_log_scroll(_log_scroll_ticket, follow, previous)
 	if kind == "warning":
-		_set_feedback("No match. Revise fragments or enable special characters. Individual words are not ruled out.")
+		_set_feedback("No match. Investigate another source or revise fragments/rules.")
 
 func _log_scroll_input(event: InputEvent) -> void:
 	if event is InputEventMouseButton and event.pressed:
@@ -279,14 +365,6 @@ func _settle_log_scroll(ticket: int, follow: bool, previous: float) -> void:
 	scrollbar.value = scrollbar.max_value if follow else previous
 	_follow_pending = false
 
-func _on_hint(fact_id: String) -> void:
-	var marker: Label = fact_markers.get(fact_id)
-	if marker:
-		marker.show()
-	voice.text = "“MEOW. His current cat. His birth year.\nSame old pattern.” — Barsik, allegedly"
-	_log("[HALLUCINATION] Start with his current cat: Barsik.", "voice")
-	audio.play("hint")
-
 func _on_end(result: String) -> void:
 	tutorial.hide()
 	var titles := {"SUCCESS": "ACCESS GRANTED", "TRACE": "TRACE DETECTED"}
@@ -298,9 +376,9 @@ func _on_end(result: String) -> void:
 		detail = "Password: %s\n\n%s\n\nLayoff order retrieved. The department lives another day.\nBarsik wants a promotion to Chief Scratching Officer." % [solved.password, solved.explanation]
 		detail += "\n\nFragments: %s · Rule: %s" % [" + ".join(session.engine.match_record.sources), session.engine.match_record.rule]
 	else:
-		detail = "Your rented compute relay was traced after repeated jobs.\nThe local hash checks did not send login requests."
+		detail = "Your botnet and recon sources were correlated by the target service.\nThe operation reached 100 Exposure."
 		detail += "\n\n“Don't worry. The report will call you an unknown idiot.”\n— a voice from the air vent\n\nRead the clues again and try a different set of fragments."
-	modal_body.text = detail + "\n\nHashes checked: %d · Jobs: %d · Exposure: %d/100" % [session.engine.attempts_used, session.engine.runs_used, session.engine.exposure]
+	modal_body.text = detail + "\n\nLogin requests: %d · Jobs: %d · Exposure: %.2f/100" % [session.engine.attempts_used, session.engine.runs_used, session.engine.exposure]
 	result_button.show()
 	_show_result()
 	_set_feedback("Session closed. Restart the mission to try again.")
@@ -311,6 +389,5 @@ func _on_voice_timeout() -> void:
 	%VoiceTimer.wait_time = 32.0
 	if session.engine.phase not in ["READY", "RUNNING"] or copy.idle_voices.is_empty():
 		return
-	if not session.hint_shown:
-		voice.text = copy.idle_voices[voice_index % copy.idle_voices.size()]
+	voice.text = copy.idle_voices[voice_index % copy.idle_voices.size()]
 	voice_index += 1

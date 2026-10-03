@@ -3,6 +3,7 @@ extends PanelContainer
 
 signal close_requested
 signal activation_requested
+signal drag_started(screen_position: Vector2)
 
 @export var title := "Untitled":
 	set(value):
@@ -33,6 +34,8 @@ func _ready() -> void:
 func _gui_input(event: InputEvent) -> void:
 	if event is InputEventMouseButton and event.pressed and event.button_index == MOUSE_BUTTON_LEFT:
 		activation_requested.emit()
+		drag_started.emit(event.global_position)
+		accept_event()
 
 func _on_close_pressed() -> void:
 	close_requested.emit()

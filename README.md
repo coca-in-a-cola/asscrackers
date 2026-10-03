@@ -4,10 +4,19 @@ A cyberpunk password-recovery puzzle with corporate black humour and an unreliab
 
 ## Play
 
-1. Read the dossier on the right.
+Press any key on the silent entry screen (click, touch and gamepad buttons also work). This opens the desktop and starts the soundtrack. The entry screen credits, in order:
+
+```text
+made by mice-seller
+made with GPT6.1 Sol
++ Google Image Pro
+music by Karl Casey @ White Bat audio
+```
+
+1. Open **G-D's Eye**, select a source and pay its Exposure price to retrieve information. New branches appear as you investigate.
 2. Type relevant **words and numbers**, pressing **Enter** after each to save a chip.
 3. Optionally enable **Special characters**.
-4. Press **RUN DICTIONARY**. Hashdog generates and checks combinations for you.
+4. Press **RUN DICTIONARY**. Hashdog sends generated passwords through the simulated botnet to the known target account.
 
 **A chip is a fragment, not necessarily a whole password.**
 
@@ -16,7 +25,7 @@ Dictionary: Fluffy, Barsik, 19, 90, Kek, lol
 Among generated candidates: Barsik + 19 + 90 + Fluffy → Barsik1990Fluffy
 ```
 
-The tool tries all nonempty subsets in every order, using each fragment at most once. Case is preserved. Use **×** to remove a fragment. The dossier has no add buttons; you must infer and type your own inputs.
+The tool tries all nonempty subsets in every order, using each fragment at most once. Case is preserved. Use **×** to remove a fragment. Information nodes do not insert fragments automatically; infer and type your own inputs.
 
 ## Slots and special characters
 
@@ -30,17 +39,25 @@ Duplicate results are checked once per job. Overlong candidates are omitted rath
 
 ## The run
 
-The fixture is a captured local SHA-256 authentication hash. The terminal sends a fictional `hashdog run --combine` command and shows sampled batch output. The generated candidates are really hashed and compared, but **GPU execution is simulated in Godot**, not delegated to real hashcat.
+The task supplies the target account and service. The terminal presents fictional distributed login requests from 24 botnet relays, using `hashdog botnet --login ... --combine`. Authentication is a deterministic local game simulation; no network or external cracking process is involved.
 
-There is **no ten-login-request limit**. All generated candidates can be checked. Work is paced in batches of up to 64 per 100 ms to keep the interface responsive.
+`Time = 60 × service coefficient × unique candidates / 1956` seconds. At the first service's coefficient of 1, a full unmatched 1956-candidate pass takes exactly **60 seconds** in the model clock. Five ordinary fragments produce at most 325 candidates (about 9.97 seconds); three produce 15 (about 0.46 seconds). A match ends work early. Special rules change the real candidate count, so they affect both time and risk.
 
-Exposure represents risk at your fictional compute relay: **+10 per job**, **+5 when the entire pool fails**. Individual hash comparisons add no Exposure. At 100 the relay is traced. Otherwise an exhausted job lets you revise fragments and run again. A draft still in the input must be saved or cleared before launching.
+Recon and botnet requests share **Exposure 0–100**. Launch costs **2**, each sent login request costs **18 / 1956**, and a full pass costs **20**. Recon has a per-node price, charged once; repeat reading is free. At 100 the operation is traced. Stop and early success save the cost of unsent requests; exhausted pools have no extra penalty. Save or clear an unsaved draft before launching.
 
-FX, SYNTH, MUTE and master volume remain available. Restart clears words, rules and session resources but keeps these presentation preferences.
+FX, Music, Mute and master volume remain available. Restart clears words, rules and session resources but keeps these presentation preferences and the soundtrack's current position.
+
+## Soundtrack
+
+The supplied MP3s in `assets/sfx/` play in order: **Hackers → New Beginnings → The Saga → repeat**, by Karl Casey / White Bat audio. Tracks overlap with a 0.75-second equal-power crossfade. Music pauses/resumes from the taskbar; Mute silences music and action effects while playback continues. Volume zero is silent. The old generated music loop is removed; short generated action effects remain.
+
+No audio players or mission are created before the first accepted input. The entry gesture starts playback synchronously and is consumed, including the initiating key's held repeats/release, so it does not enter a fragment or activate a desktop control. Mission restart never returns to the entry screen. See [startup and audio](docs/startup-audio.md).
 
 ## Desktop
 
-The teal grid wallpaper surrounds four compact, fixed application windows. Existing Win95 borders and PNG icons use a pastel sage/lavender theme. Click a desktop shortcut or a titlebar to activate an application; **Read Me** opens help. Window dragging and closing are reserved for a later iteration.
+Four fixed-size applications sit on teal grid wallpaper. Drag their titlebars to move them and use **X** to close them. Shortcuts and taskbar buttons reopen the same window with its position and content preserved. No resize handles are provided. **Closing the terminal does not stop the botnet**: progress, Exposure and a Stop button remain on the taskbar. **Read Me** opens help.
+
+G-D's Eye is a scrollable directed graph rooted at the target's identity. Clicking a leaf opens an adjacent information subwindow. An unretrieved leaf offers a priced query; retrieved content can be read again for free. Some sources require multiple retrieved parents. The first mission's useful recon trail costs 45 Exposure; an optional club record is a distraction.
 
 **FX** toggles the whole retro stack: subtle URSC-derived dithering followed by Flowerwall CRT scanlines, RGB mask, grain and color smearing. Wallpaper and pastel colors remain with FX off. Curvature, screen shake and bloom are disabled so small text and click targets stay aligned.
 
@@ -54,6 +71,7 @@ godot --headless --path . --editor --import --quit
 godot --headless --path . --script res://tests/run_tests.gd
 godot --headless --path . --script res://tests/ui_components.gd
 godot --path . --script res://tests/ui_smoke.gd
+godot --path . --script res://tests/startup_audio.gd
 ```
 
 If Godot is not on PATH, substitute its executable path. On the development machine:
@@ -66,20 +84,24 @@ Default window 1440×900; minimum 1024×720. UI tests capture screenshots to `us
 
 ## Code and scope
 
-`candidate_generator.gd` owns expansion and derivations; `dictionary_service.gd` owns words and capacity; `attack_engine.gd` owns comparisons and risk; `game_session.gd` owns timer and mission. `scenes/main.tscn` composes the Windows 95 desktop from independent scenes. `scripts/ui/main.gd` connects signals and projects session state onto existing controls.
+`candidate_generator.gd` owns expansion; `dictionary_service.gd` owns fragments; `exposure_budget.gd` owns exact fixed-point risk; `intel_service.gd` owns paid discovery; `attack_engine.gd` owns the request snapshot and model clock; `game_session.gd` coordinates the mission independently of window visibility. `service_catalog.gd` reads names and time coefficients from `data/services/services.json`.
 
-One authored English mission; no network, external cracking process, saves or procedural targets. Generated audio and the procedural background require no runtime services. The operator's self-portrait uses `avatars/avatar.png`, configured in `data/ui/operator.tres`. Real-user usability, subjective audio and standalone export still need human validation.
+One authored English mission; no network, external cracking process, saves or procedural targets. The local MP3 soundtrack, generated action effects and procedural backgrounds require no runtime services. The operator's self-portrait uses `avatars/avatar.png`, configured in `data/ui/operator.tres`. Real-user usability, subjective audio and standalone export still need human validation.
 
 ## UI authoring
 
+- `scenes/boot.tscn` / `scenes/ui/start_screen.tscn`: silent entry, ordered credits, one-shot input gateway and delayed desktop creation.
+- `assets/ui/startup_theme.tres`: isolated dark terminal palette and typography; `startup_background.gd` draws its grid/registration marks. The desktop retains its own pastel theme.
+- `scripts/ui/game_audio.gd`: two music players, playlist/crossfade/pause state and generated action effects. Tracks are serialized on the main scene's Audio node; `default_bus_layout.tres` routes Music and SFX independently to Master.
 - `scenes/ui/atoms/`: button, icon, checkbox, input, window background, titlebar, statusbar, modal layer.
-- `scenes/ui/components/`: window, fragment slot, fact card, dialog, desktop shortcut, retro effects.
+- `scenes/ui/components/`: window, fragment slot, dialog, desktop shortcut, intel detail, retro effects. The earlier fact-card primitive remains available.
 - `scenes/ui/panels/`: terminal, dictionary, operator, dossier, taskbar, help, result.
 - `assets/ui/windows95/game_theme.tres`: shared palette, fonts, texture borders, control states. Textures use Nearest; borders stretch independently of labels and icons.
-- `scripts/ui/components/desktop_windows.gd`: responsive fixed placement and active-window ownership, separated from application content for future drag/open/close behavior.
+- `scripts/ui/components/desktop_windows.gd`: initial placement, open/close/drag, screen clamping and active-window ownership. Windows remain alive when closed.
+- `scripts/ui/components/intel_graph.gd`: stable authored node positions, directional links, discovery states and graph extents.
 - `assets/shaders/flowerwall/`, `assets/shaders/ursc/`: adapted third-party shaders and MIT licenses. Post-process parameters are authored in `retro_effects.tscn`; no editor plugin or extra Autoload is required.
 - `data/ui/operator.tres`: self-portrait and operator copy. `data/ui/help.tres`: tutorial and idle voices. Mission records remain in `data/targets/target_001.json`.
 
-Static UI is authored in `.tscn`; six dictionary slots persist for the entire scene lifetime. The only runtime UI instantiation is the variable-length dossier list, using `fact_card.tscn`. Components can run separately with F6. See [UI architecture and asset mapping](docs/ui-win95.md).
+Static UI is authored in `.tscn`; six dictionary slots and application instances persist for the scene lifetime. Discovered graph buttons are instantiated once and updated in place. Mission schema 3 validates costs, references and graph acyclicity. See [UI architecture and asset mapping](docs/ui-win95.md).
 
 [Product](PRD.MD) · [Rules](docs/mvp-spec.md) · [Hashcat references and math](docs/hashcat-model.md) · [Verification](docs/verification.md)

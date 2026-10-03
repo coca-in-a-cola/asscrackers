@@ -12,6 +12,12 @@ func check(condition: bool, description: String) -> void:
 		failures.append(description)
 		printerr("UI FAIL: " + description)
 
+func settle() -> void:
+	await process_frame
+	await process_frame
+	await process_frame
+	await process_frame
+
 func capture(label: String) -> void:
 	if DisplayServer.get_name() == "headless":
 		return
@@ -27,177 +33,233 @@ func capture(label: String) -> void:
 	check((image.save_webp(path) if webp else image.save_png(path)) == OK, "Screenshot " + label)
 	print("CAPTURE: " + path)
 
+func mouse_button(point: Vector2, pressed: bool) -> void:
+	var event := InputEventMouseButton.new()
+	event.position = point
+	event.global_position = point
+	event.button_index = MOUSE_BUTTON_LEFT
+	event.pressed = pressed
+	root.push_input(event)
+	await process_frame
+
+func click_control(control: Control) -> void:
+	var point := control.get_global_rect().get_center()
+	await mouse_button(point, true)
+	await mouse_button(point, false)
+
+func drag_title(window: Control, offset: Vector2) -> void:
+	var title := window.get_node("Stack/Titlebar") as Control
+	var start := title.global_position + Vector2(80, 12)
+	await mouse_button(start, true)
+	var motion := InputEventMouseMotion.new()
+	motion.position = start + offset
+	motion.global_position = motion.position
+	motion.relative = offset
+	root.push_input(motion)
+	await process_frame
+	await mouse_button(start + offset, false)
+
 func type_fragment(scene: Control, value: String) -> void:
 	scene.input.text = value
 	scene.input.text_submitted.emit(value)
 
-func wait_for_job(scene: Control) -> void:
-	for i in 120:
-		if scene.session.engine.phase != "RUNNING":
-			return
-		await create_timer(0.05).timeout
-	check(false, "Job completes within six seconds")
+func source(scene: Control, id: String) -> void:
+	scene.get_node("IntelDetail").hide()
+	scene._activate_application(&"Dossier")
+	scene.dossier_scroll.ensure_control_visible(scene.dossier.nodes[id])
+	await settle()
+	await click_control(scene.dossier.nodes[id])
+	await settle()
+	check(scene.selected_intel == id and scene.get_node("IntelDetail").visible, "Source opens anchored subwindow: " + id)
+
+func buy(scene: Control, id: String) -> void:
+	await source(scene, id)
+	await click_control(scene.get_node("IntelDetail").query_button)
+	await settle()
 
 func check_layout(scene: Control) -> void:
 	var bounds := root.get_visible_rect().size
-	check(scene.footer.get_global_rect().end.y <= bounds.y and scene.footer.get_global_rect().end.x <= bounds.x, "Footer fits")
-	check(scene.input.get_global_rect().end.y < scene.footer.get_global_rect().position.y, "Input fits above footer")
-	check(scene.special_toggle.get_global_rect().end.x < scene.dossier.get_global_rect().position.x, "Special toggle fits workspace")
-	for chip in scene.chip_grid.get_children():
-		check(chip.get_global_rect().end.y < scene.input.get_global_rect().position.y and chip.get_global_rect().end.x <= bounds.x, "Chip fits")
-	var applications := scene.get_node("Applications")
-	for application in applications.get_children():
+	check(scene.footer.get_global_rect().end.y <= bounds.y and scene.footer.get_global_rect().end.x <= bounds.x, "Taskbar fits")
+	for application in scene.get_node("Applications").get_children():
 		var rect: Rect2 = application.get_global_rect()
-		check(rect.position.x >= 108 and rect.position.y >= 0 and rect.end.x <= bounds.x and rect.end.y < scene.footer.get_global_rect().position.y, "Application fits desktop: " + application.name)
-		for other in applications.get_children():
-			if application != other:
-				check(not rect.intersects(other.get_global_rect()), "Fixed windows do not obscure one another")
-	var terminal := scene.get_node("Applications/Terminal") as Control
-	var dictionary := scene.get_node("Applications/Dictionary") as Control
-	check(terminal.get_global_rect().end.y < dictionary.get_global_rect().position.y, "Terminal and dictionary have separate work areas")
-
-func click_control(control: Control) -> void:
-	var point := control.get_global_rect().get_center()
-	for pressed in [true, false]:
-		var event := InputEventMouseButton.new()
-		event.position = point
-		event.global_position = point
-		event.button_index = MOUSE_BUTTON_LEFT
-		event.pressed = pressed
-		root.push_input(event)
-		await process_frame
+		check(rect.position.x >= 0 and rect.position.y >= 0 and rect.end.x <= bounds.x and rect.end.y < scene.footer.get_global_rect().position.y, "Application fits desktop: " + application.name)
+	var dictionary: Control = scene.get_node("Applications/Dictionary")
+	var rect := dictionary.get_global_rect()
+	check(scene.input.get_global_rect().position.x >= rect.position.x + 12 and scene.input.get_global_rect().end.x <= rect.end.x - 12, "Dictionary has horizontal content padding")
+	check(scene.feedback.get_global_rect().end.y <= rect.end.y - 10, "Dictionary has bottom content padding")
+	for chip in scene.chip_grid.get_children():
+		check(chip.get_global_rect().end.y < scene.input.get_global_rect().position.y, "Slots stay above input")
+	var popup: Control = scene.get_node("IntelDetail")
+	if popup.visible:
+		check(popup.get_global_rect().position.x >= 0 and popup.get_global_rect().end.x <= bounds.x and popup.get_global_rect().end.y < scene.footer.get_global_rect().position.y, "Intel subwindow stays in usable screen area")
 
 func run() -> void:
 	var scene = load("res://scenes/main.tscn").instantiate()
+	scene.get_node("Session").automatic_clock = false
 	root.add_child(scene)
-	await process_frame
-	await process_frame
+	await settle()
+	var manager: Control = scene.get_node("Applications")
+	var terminal: Control = manager.application(&"Terminal")
+	var dictionary: Control = manager.application(&"Dictionary")
+	var dossier_window: Control = manager.application(&"Dossier")
+	var popup: Control = scene.get_node("IntelDetail")
 	check(scene.run_button.disabled and scene.chip_grid.get_child_count() == 6, "Empty six-slot state")
-	check(scene.dossier.find_children("*", "Button", true, false).is_empty(), "Dossier read-only")
-	check(scene.portrait.texture.resource_path == "res://avatars/avatar.png" and scene.portrait.stretch_mode == TextureRect.STRETCH_KEEP_ASPECT_CENTERED, "Operator self-portrait uses avatar without distortion")
+	check(scene.portrait.texture.resource_path == "res://avatars/avatar.png", "Operator portrait preserved")
+	check(scene.dossier.nodes.size() == 2 and not scene.dossier.nodes.has("pet"), "Initial graph hides undiscovered branches")
+	check(terminal.target_label.text.contains("lexa@anus.industries"), "Known login displayed")
 	check_layout(scene)
 	await click_control(scene.get_node("DesktopIcons/TerminalShortcut"))
-	check(scene.get_node("Applications").active_application == &"Terminal" and scene.get_node("Applications/Terminal").active, "Shortcut activates terminal through unobstructed desktop")
-	await click_control(scene.get_node("Applications/Dictionary/Stack/Titlebar"))
-	check(scene.get_node("Applications").active_application == &"Dictionary", "Titlebar activates fixed application")
+	var original_id := terminal.get_instance_id()
+	var original_size := terminal.size
+	var original_position := terminal.position
+	await drag_title(terminal, Vector2(30, -20))
+	check(terminal.position != original_position and terminal.size == original_size, "Titlebar moves window without resizing")
+	var moved := terminal.position
+	await click_control(terminal.get_node("Stack/Titlebar/Row/Close"))
+	check(not terminal.visible, "Close hides application")
+	await click_control(scene.get_node("DesktopIcons/TerminalShortcut"))
+	check(terminal.visible and terminal.get_instance_id() == original_id and terminal.position == moved, "Shortcut restores same window and position")
+	await drag_title(terminal, Vector2(-3000, -3000))
+	check(terminal.position.x >= 8 and terminal.position.y >= 8 and terminal.size == original_size, "Dragging is bounded, size fixed")
+	await drag_title(terminal, original_position - terminal.position)
 	scene.effects_toggle.button_pressed = false
-	await process_frame
-	check(not scene.get_node("RetroEffects").visible, "FX disables every post-processing pass")
+	await settle()
+	check(not scene.get_node("RetroEffects").visible, "FX disables entire stack")
 	await capture("desktop-clean")
 	scene.effects_toggle.button_pressed = true
-	check(scene.get_node("RetroEffects").visible, "FX restores post-processing")
-	var slot_ids: Array[int] = []
-	for slot in scene.chip_grid.get_children():
-		slot_ids.append(slot.get_instance_id())
+	await capture("desktop")
+	scene._activate_application(&"Terminal")
+	await click_control(scene.special_toggle)
+	check(manager.active_application == &"Dictionary" and scene.special_toggle.button_pressed, "Consumed checkbox click activates its owning window")
+	await click_control(scene.special_toggle)
 	await click_control(scene.get_node("DesktopIcons/HelpShortcut"))
-	await process_frame
-	check(scene.tutorial.visible and scene.tutorial.is_ancestor_of(root.gui_get_focus_owner()), "Help takes keyboard focus")
+	check(scene.tutorial.visible and scene.tutorial.is_ancestor_of(root.gui_get_focus_owner()), "Help takes modal focus")
 	var tab := InputEventKey.new()
 	tab.keycode = KEY_TAB
 	tab.pressed = true
-	Input.parse_input_event(tab)
+	root.push_input(tab)
 	await process_frame
-	check(scene.tutorial.is_ancestor_of(root.gui_get_focus_owner()), "Tab stays inside modal")
-	var down := InputEventKey.new()
-	down.keycode = KEY_DOWN
-	down.pressed = true
-	Input.parse_input_event(down)
-	await process_frame
-	check(scene.tutorial.is_ancestor_of(root.gui_get_focus_owner()), "Arrow navigation stays inside modal")
+	check(scene.tutorial.is_ancestor_of(root.gui_get_focus_owner()), "Tab remains in modal")
 	await capture("help")
 	var escape := InputEventKey.new()
 	escape.keycode = KEY_ESCAPE
 	escape.pressed = true
-	Input.parse_input_event(escape)
+	root.push_input(escape)
 	await process_frame
 	check(not scene.tutorial.visible, "Escape closes help")
-	check(root.gui_get_focus_owner() == scene.input, "Closing help restores input focus")
-	await capture("desktop")
-	for word in ["Fluffy", "Barsik", "19", "90", "Kek", "lol"]:
-		type_fragment(scene, word)
-	check(scene.session.candidates.size() == 1956, "Six fragments produce full combination pool")
-	for i in scene.chip_grid.get_child_count():
-		check(scene.chip_grid.get_child(i).get_instance_id() == slot_ids[i], "Slot nodes persist across data updates")
-	scene.special_toggle.button_pressed = true
-	check(not scene.special_toggle.button_pressed and scene.session.dictionary.words.size() == 6 and scene.feedback.text.contains("Remove"), "Toggle rejected without deleting sixth fragment")
-	type_fragment(scene, "seventh")
-	check(scene.input.text == "seventh" and scene.session.dictionary.words.size() == 6, "Seventh fragment rejected")
-	scene.input.clear()
-	await capture("combinations")
-	scene.remove_buttons[5].pressed.emit()
-	scene.special_toggle.button_pressed = true
-	check(scene.special_toggle.button_pressed and scene.session.dictionary.capacity() == 5 and scene.slots_label.text == "5 / 5", "Checkbox changes actual capacity")
-	check(scene.chip_labels[5].text == "! ? # @" and scene.remove_buttons.size() == 5, "Reserved rule slot, no delete button")
-	check(scene.session.candidates.size() <= 1950 and scene.session.candidates.size() > 325, "Special pool count")
-	type_fragment(scene, "sixth")
-	check(scene.input.text == "sixth" and scene.session.dictionary.words.size() == 5, "Special mode rejects sixth fragment")
-	scene.input.clear()
-	await process_frame
-	await capture("specials")
+	await source(scene, "nickname")
+	check(not popup.body.text.contains("Lexa / @") and popup.query_button.visible and scene.session.budget.value == 0, "Click previews cost without retrieving content")
+	await capture("intel-query")
+	await click_control(popup.query_button)
+	await settle()
+	check(scene.session.budget.value == 5 and scene.dossier.nodes.size() == 5 and popup.body.text.contains("@lexa_never_sleeps"), "Paid query reveals content and branches")
+	await source(scene, "nickname")
+	check(not popup.query_button.visible and scene.session.budget.value == 5, "Purchased source opens for free")
+	await buy(scene, "pet")
+	check(scene.session.budget.value == 13 and not scene.dossier.nodes.has("habit"), "Deeper node waits for cross-reference")
+	await buy(scene, "leaked")
+	check(scene.dossier.nodes.has("habit"), "Cross-reference adds new leaf")
+	await buy(scene, "birth_year")
+	await buy(scene, "habit")
+	check(scene.session.budget.value == 45 and popup.body.text.contains("replace lowercase a"), "Full useful recon trail costs 45")
+	check(scene.session.dictionary.words.is_empty(), "Graph does not insert password fragments automatically")
+	await capture("intel-revealed")
+	var popup_position := popup.position
+	await drag_title(dossier_window, Vector2(-130, -40))
+	check(popup.visible and popup.position != popup_position, "Information subwindow follows its owner")
+	manager.close_application(&"Dossier")
+	check(not popup.visible, "Closing graph hides owned subwindow")
+	manager.open_application(&"Dossier")
+	await source(scene, "habit")
+	check(popup.body.text.contains("replace lowercase a") and scene.session.budget.value == 45, "Reopening graph preserves bought information")
 	root.size = Vector2i(1024, 720)
-	await process_frame
-	await process_frame
+	await settle()
 	check_layout(scene)
 	await capture("minimum")
 	root.size = Vector2i(1920, 1080)
-	await process_frame
-	await process_frame
+	await settle()
 	check_layout(scene)
 	await capture("fullhd")
 	root.size = Vector2i(1440, 900)
-	await process_frame
-	await process_frame
+	await settle()
+	popup.hide()
+	scene._activate_application(&"Dictionary")
+	var slot_ids: Array = []
+	for slot in scene.chip_grid.get_children():
+		slot_ids.append(slot.get_instance_id())
+	for word in ["Fluffy", "Barsik", "19", "90", "Kek", "lol"]:
+		type_fragment(scene, word)
+	check(scene.session.candidates.size() == 1956 and scene.forecast_label.text.contains("60.000 s"), "Full dictionary forecasts one minute")
+	scene.special_toggle.button_pressed = true
+	check(not scene.special_toggle.button_pressed and scene.feedback.text.contains("Remove"), "Special toggle preserves sixth fragment")
+	scene.remove_buttons[5].pressed.emit()
+	scene.special_toggle.button_pressed = true
+	check(scene.slots_label.text == "5 / 5" and scene.chip_labels[5].text == "! ? # @", "Special mode reserves one slot")
+	for index in scene.chip_grid.get_child_count():
+		check(scene.chip_grid.get_child(index).get_instance_id() == slot_ids[index], "Slot identities persist")
 	scene.input.text = "unsaved"
-	scene.run_button.pressed.emit()
-	check(scene.session.engine.exposure == 0 and scene.feedback.text.contains("unsaved"), "Unsaved input blocks job for free")
+	scene._run_dictionary()
+	check(scene.session.budget.value == 45 and scene.feedback.text.contains("unsaved"), "Unsaved draft blocks attack for free")
 	scene.input.clear()
-	scene.run_button.pressed.emit()
-	check(not scene.input.editable and scene.special_toggle.disabled and scene.run_button.disabled and scene.remove_buttons[0].disabled, "Job locks words and rules")
-	await wait_for_job(scene)
-	check(scene.session.engine.result == "SUCCESS" and scene.modal.visible, "Authored mission solved from fragments plus rules")
-	check(scene.session.engine.attempts_used > 10 and scene.session.engine.exposure == 10, "More than ten candidates tested without network cap")
-	check(scene.modal_body.text.contains("Barsik + 19 + 90") and scene.modal_body.text.contains("a → @ + !"), "Result explains combination and rule")
-	check(scene.log_view.get_parsed_text().contains("--specials") and scene.log_view.get_parsed_text().contains("HASH MATCH"), "Terminal generated command and sample result")
+	scene._run_dictionary()
+	check(not scene.input.editable and scene.run_button.disabled and scene.get_node("Taskbar").stop_button.disabled == false, "Running job locks dictionary and enables global Stop")
+	scene.session.advance(scene.session.generation, 60)
+	await settle()
+	check(scene.modal.visible and scene.session.engine.result == "SUCCESS" and scene.session.engine.elapsed < 60, "Early successful login opens result")
+	check(scene.modal_body.text.contains("Barsik + 19 + 90") and scene.log_view.get_parsed_text().contains("LOGIN ACCEPTED"), "Result and log explain actual login match")
 	await capture("victory")
 	scene._restart()
-	check(not scene.special_toggle.button_pressed and scene.session.candidates.is_empty(), "Restart resets special mode and pool")
-	type_fragment(scene, "[color=red]")
-	check(scene.chip_labels[0].text == "[color=red]", "Literal fragment display")
-	scene._restart()
-	for fragment in ["aa", "ba", "ca", "da", "ea"]:
+	for fragment in ["a", "b", "c", "d", "e", "f"]:
 		type_fragment(scene, fragment)
-	scene.special_toggle.button_pressed = true
-	check(scene.session.candidates.size() == 1950, "Maximum special pool in UI")
-	scene.run_button.pressed.emit()
-	await create_timer(0.25).timeout
-	check(scene.session.engine.phase == "RUNNING" and scene.session.engine.index > 0 and scene.session.engine.index < 1950, "Incremental responsive batches")
-	await capture("running")
-	await wait_for_job(scene)
-	check(scene.session.engine.phase == "READY" and scene.session.engine.index == 1950 and scene.session.engine.exposure == 15, "Exhaustion checks entire pool, allows revision")
-	check(not scene.modal.visible and scene.input.editable and scene.chip_labels[0].text == "aa", "Fragments retained after no-match")
-	await capture("exhausted")
+	scene._activate_application(&"Terminal")
+	scene._run_dictionary()
+	await click_control(terminal.get_node("Stack/Titlebar/Row/Close"))
+	scene.session.advance(scene.session.generation, 5)
+	await settle()
+	check(not terminal.visible and scene.session.engine.index == 163 and scene.session.engine.phase == "RUNNING", "Closed terminal keeps botnet running")
+	check(scene.get_node("Taskbar").remaining_label.text.contains("55.00") and scene.get_node("Taskbar").exposure_bar.value > 2, "Taskbar displays background time and exposure")
+	await capture("background-job")
+	for window in manager.get_children():
+		manager.close_application(StringName(window.name))
+	await click_control(scene.get_node("Taskbar").stop_button)
+	var stopped_units: int = scene.session.budget.units
+	scene.session.advance(scene.session.generation, 60)
+	check(scene.session.engine.phase == "READY" and scene.session.budget.units == stopped_units, "Global Stop works with every application closed")
+	await click_control(scene.get_node("Taskbar").application_buttons[&"Terminal"])
+	check(terminal.visible and terminal.get_instance_id() == original_id and scene.log_view.get_parsed_text().contains("STOPPED"), "Taskbar reopens persistent application")
+	scene._activate_application(&"Dictionary")
 	scene._restart()
-	scene.effects_toggle.button_pressed = false
+	type_fragment(scene, "[color=red]")
+	check(scene.chip_labels[0].text == "[color=red]", "Literal fragment text preserved")
+	scene._restart()
+	# One tiny run uses the real runtime clock, with its terminal hidden.
+	scene.session.automatic_clock = true
 	type_fragment(scene, "wrong")
-	for i in 6:
-		scene.run_button.pressed.emit()
-		await wait_for_job(scene)
-	check(scene.session.hint_shown and scene.fact_markers.pet.visible, "FX-off clue survives")
-	await process_frame
+	scene._run_dictionary()
+	manager.close_application(&"Terminal")
+	await create_timer(0.2).timeout
+	check(scene.session.engine.phase == "READY" and scene.session.engine.attempts_used == 1, "Real background clock finishes tiny pool")
+	scene.session.automatic_clock = false
+	scene._activate_application(&"Terminal")
+	for line in 30:
+		scene._log("Scroll preservation test line %d" % line)
+	await settle()
 	var scrollbar: VScrollBar = scene.log_view.get_v_scroll_bar()
-	check(scrollbar.value >= scrollbar.max_value - scrollbar.page - 6, "Terminal follows batch output")
 	scrollbar.value = 0
-	scene._log("Reader scroll preservation", "system")
-	await process_frame
-	await process_frame
-	check(scrollbar.value == 0, "Manual scroll preserved")
-	scene.run_button.pressed.emit()
-	check(scene.session.engine.result == "TRACE" and scene.session.engine.attempts_used == 6, "Relay trace before seventh job hashes")
+	scene._log("Reader scroll preservation")
+	await settle()
+	check(scrollbar.value == 0, "Manual log scroll survives updates")
+	scene._restart()
+	scene.session.budget.charge_points(97)
+	scene._query_intel("nickname")
+	await settle()
+	check(scene.modal.visible and scene.session.engine.result == "TRACE", "Paid recon can trigger shared-budget trace")
 	await capture("trace")
+	scene.effects_toggle.button_pressed = false
 	scene.audio.set_music(true)
 	scene.audio.set_muted(true)
 	scene._restart()
-	check(scene.audio.muted and scene.audio.music_player.playing and not scene.effects_enabled, "Preferences survive restart")
+	check(scene.audio.muted and scene.audio.music_player.playing and not scene.effects_enabled and scene.dossier.nodes.size() == 2, "Restart resets recon, preserves presentation preferences")
 	scene.audio.set_music(false)
 	print("UI SMOKE: %d checks, %d failures" % [count, failures.size()])
 	scene.queue_free()

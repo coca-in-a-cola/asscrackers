@@ -4,11 +4,11 @@
 [node name="Help" instance=ExtResource("1")]
 title = "Help — How to play"
 window_icon = ExtResource("2")
-[node name="Heading" parent="Stack/Content" index="0"]
-text = "Three steps. No commands to learn."
-[node name="Primary" parent="Stack/Content/Actions" index="0"]
+[node name="Heading" parent="Stack/ContentMargin/Content" index="0"]
+text = "Investigate. Assemble. Dispatch."
+[node name="Primary" parent="Stack/ContentMargin/Content/Actions" index="0"]
 text = "OK"
-[node name="Secondary" parent="Stack/Content/Actions" index="1"]
+[node name="Secondary" parent="Stack/ContentMargin/Content/Actions" index="1"]
 visible = false
-[editable path="Stack/Content/Actions/Primary"]
-[editable path="Stack/Content/Actions/Secondary"]
+[editable path="Stack/ContentMargin/Content/Actions/Primary"]
+[editable path="Stack/ContentMargin/Content/Actions/Secondary"]

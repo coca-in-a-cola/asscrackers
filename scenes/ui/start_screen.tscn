@@ -1,0 +1,176 @@
+[gd_scene load_steps=4 format=3]
+
+[ext_resource type="Script" path="res://scripts/ui/start_screen.gd" id="1"]
+[ext_resource type="Theme" path="res://assets/ui/startup_theme.tres" id="2"]
+[ext_resource type="Script" path="res://scripts/ui/startup_background.gd" id="3"]
+
+[node name="StartScreen" type="Control"]
+layout_mode = 3
+anchors_preset = 15
+anchor_right = 1.0
+anchor_bottom = 1.0
+grow_horizontal = 2
+grow_vertical = 2
+theme = ExtResource("2")
+script = ExtResource("1")
+
+[node name="Background" type="Control" parent="."]
+layout_mode = 1
+anchors_preset = 15
+anchor_right = 1.0
+anchor_bottom = 1.0
+grow_horizontal = 2
+grow_vertical = 2
+mouse_filter = 2
+script = ExtResource("3")
+
+[node name="Margin" type="MarginContainer" parent="."]
+layout_mode = 1
+anchors_preset = 15
+anchor_right = 1.0
+anchor_bottom = 1.0
+grow_horizontal = 2
+grow_vertical = 2
+mouse_filter = 2
+theme_override_constants/margin_left = 40
+theme_override_constants/margin_top = 40
+theme_override_constants/margin_right = 40
+theme_override_constants/margin_bottom = 48
+
+[node name="Stack" type="VBoxContainer" parent="Margin"]
+layout_mode = 2
+mouse_filter = 2
+theme_override_constants/separation = 22
+
+[node name="Header" type="HBoxContainer" parent="Margin/Stack"]
+layout_mode = 2
+mouse_filter = 2
+[node name="Identity" type="Label" parent="Margin/Stack/Header"]
+layout_mode = 2
+size_flags_horizontal = 3
+theme_type_variation = &"BootAccent"
+text = "AC // SYSTEM ENTRY"
+[node name="Location" type="Label" parent="Margin/Stack/Header"]
+layout_mode = 2
+theme_type_variation = &"BootSmall"
+text = "PERM-2091 / SESSION 001"
+[node name="TopRule" type="HSeparator" parent="Margin/Stack"]
+layout_mode = 2
+
+[node name="Center" type="CenterContainer" parent="Margin/Stack"]
+layout_mode = 2
+size_flags_vertical = 3
+mouse_filter = 2
+[node name="Composition" type="HBoxContainer" parent="Margin/Stack/Center"]
+layout_mode = 2
+mouse_filter = 2
+theme_override_constants/separation = 56
+
+[node name="TitleBlock" type="VBoxContainer" parent="Margin/Stack/Center/Composition"]
+custom_minimum_size = Vector2(490, 0)
+layout_mode = 2
+size_flags_vertical = 4
+mouse_filter = 2
+theme_override_constants/separation = 18
+[node name="Eyebrow" type="Label" parent="Margin/Stack/Center/Composition/TitleBlock"]
+layout_mode = 2
+theme_type_variation = &"BootSmall"
+text = "PERSONAL COMPUTE / UNAUTHORIZED ACCESS"
+[node name="Title" type="Label" parent="Margin/Stack/Center/Composition/TitleBlock"]
+unique_name_in_owner = true
+layout_mode = 2
+theme_type_variation = &"BootTitle"
+text = "ASS /\nCRACKERS"
+[node name="Accent" type="HBoxContainer" parent="Margin/Stack/Center/Composition/TitleBlock"]
+layout_mode = 2
+theme_override_constants/separation = 6
+[node name="Cyan" type="ColorRect" parent="Margin/Stack/Center/Composition/TitleBlock/Accent"]
+custom_minimum_size = Vector2(64, 3)
+layout_mode = 2
+mouse_filter = 2
+color = Color(0.39, 0.96, 0.85, 1)
+[node name="Rose" type="ColorRect" parent="Margin/Stack/Center/Composition/TitleBlock/Accent"]
+custom_minimum_size = Vector2(18, 3)
+layout_mode = 2
+mouse_filter = 2
+color = Color(0.93, 0.43, 0.59, 1)
+[node name="Tagline" type="Label" parent="Margin/Stack/Center/Composition/TitleBlock"]
+layout_mode = 2
+theme_type_variation = &"BootSmall"
+text = "BAD PASSWORDS.\nWORSE EMPLOYERS."
+theme_override_constants/line_spacing = 6
+
+[node name="Credits" type="VBoxContainer" parent="Margin/Stack/Center/Composition"]
+unique_name_in_owner = true
+custom_minimum_size = Vector2(390, 0)
+layout_mode = 2
+size_flags_vertical = 4
+mouse_filter = 2
+theme_override_constants/separation = 24
+[node name="Author" type="VBoxContainer" parent="Margin/Stack/Center/Composition/Credits"]
+layout_mode = 2
+theme_override_constants/separation = 6
+[node name="Role" type="Label" parent="Margin/Stack/Center/Composition/Credits/Author"]
+layout_mode = 2
+theme_type_variation = &"BootSmall"
+text = "made by"
+[node name="Name" type="Label" parent="Margin/Stack/Center/Composition/Credits/Author"]
+layout_mode = 2
+theme_type_variation = &"BootAuthor"
+text = "mice-seller"
+[node name="Tools" type="VBoxContainer" parent="Margin/Stack/Center/Composition/Credits"]
+layout_mode = 2
+theme_override_constants/separation = 6
+[node name="Role" type="Label" parent="Margin/Stack/Center/Composition/Credits/Tools"]
+layout_mode = 2
+theme_type_variation = &"BootSmall"
+text = "made with"
+[node name="Model" type="Label" parent="Margin/Stack/Center/Composition/Credits/Tools"]
+layout_mode = 2
+theme_type_variation = &"BootCredit"
+text = "GPT6.1 Sol"
+[node name="Images" type="Label" parent="Margin/Stack/Center/Composition/Credits/Tools"]
+layout_mode = 2
+theme_type_variation = &"BootCredit"
+text = "+ Google Image Pro"
+[node name="Music" type="VBoxContainer" parent="Margin/Stack/Center/Composition/Credits"]
+layout_mode = 2
+theme_override_constants/separation = 6
+[node name="Role" type="Label" parent="Margin/Stack/Center/Composition/Credits/Music"]
+layout_mode = 2
+theme_type_variation = &"BootSmall"
+text = "music by"
+[node name="Name" type="Label" parent="Margin/Stack/Center/Composition/Credits/Music"]
+layout_mode = 2
+theme_type_variation = &"BootMusic"
+text = "Karl Casey @ White Bat audio"
+
+[node name="Launch" type="VBoxContainer" parent="Margin/Stack"]
+layout_mode = 2
+mouse_filter = 2
+theme_override_constants/separation = 12
+[node name="Prompt" type="Label" parent="Margin/Stack/Launch"]
+unique_name_in_owner = true
+layout_mode = 2
+theme_type_variation = &"BootPrompt"
+text = "[ Press any key ]"
+horizontal_alignment = 1
+[node name="InputHint" type="Label" parent="Margin/Stack/Launch"]
+layout_mode = 2
+theme_type_variation = &"BootSmall"
+text = "keyboard / click / touch   ·   audio starts on entry"
+horizontal_alignment = 1
+[node name="BottomRule" type="HSeparator" parent="Margin/Stack"]
+layout_mode = 2
+[node name="Footer" type="HBoxContainer" parent="Margin/Stack"]
+layout_mode = 2
+mouse_filter = 2
+[node name="Status" type="Label" parent="Margin/Stack/Footer"]
+layout_mode = 2
+size_flags_horizontal = 3
+theme_type_variation = &"BootSmall"
+text = "STANDBY_"
+[node name="Audio" type="Label" parent="Margin/Stack/Footer"]
+layout_mode = 2
+theme_type_variation = &"BootSmall"
+text = "SOUNDTRACK // 03 FILES"

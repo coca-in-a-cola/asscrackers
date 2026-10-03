@@ -42,8 +42,10 @@ The comparable quantity is the **upper bound on candidates**, not success probab
 
 The budget requires explicit limits: no repeated fragment use, no arbitrary-length permutations, no universal symbol insertion and no hidden case variants. Adding more rules in future requires revisiting the slot limit and formula.
 
-## Offline checks versus online requests
+## Current botnet simulation
 
-Hash recovery operates against a captured hash. Thousands of local candidate comparisons are not thousands of login attempts. The old ten-request game limit would prevent this intended mechanic from working and has therefore been removed.
+Hashcat references explain combination/rule generation only. The current game presents distributed login attempts against a known account, not offline recovery of a captured hash. The target service is simulated locally with a deterministic SHA-256 comparison oracle. There is no external process or networking.
 
-The game uses a SHA-256 fixture and paced CPU comparisons in Godot. GPU throughput is simulated and labelled as such. Exposure represents the fictional danger of consuming a monitored compute relay: +10 per job, +5 for a completely exhausted job. That risk model is game balance, not a claim about real hashcat detection.
+Each candidate now represents one simulated request. With service coefficient k, elapsed model time permits floor(elapsed × 1956 / (60 × k)) requests, bounded by the pool size. This makes a complete 1956-candidate baseline pass exactly 60 seconds, while deduplicated and partial pools finish proportionally sooner. Success and Stop cancel unsent requests.
+
+Exposure uses exact integer accounting: one point = 1956 units; launch = 3912 units; each request = 18 units. A full pass therefore costs exactly 20 points without per-request rounding drift. Recon costs integer points from the same ledger. At 195600 units, TRACE takes priority over a candidate match or a source reply. Empty/invalid launches and queries to undiscovered nodes cost nothing. There is no exhaustion surcharge or ten-request cutoff.

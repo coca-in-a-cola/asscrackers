@@ -1,0 +1,10 @@
+{
+  "anus_hr": {
+    "display_name": "ANUS INDUSTRIES / Human Resources",
+    "time_coefficient": 1.0
+  },
+  "anus_vault": {
+    "display_name": "ANUS INDUSTRIES / Executive Vault",
+    "time_coefficient": 2.0
+  }
+}

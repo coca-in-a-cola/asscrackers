@@ -7,32 +7,32 @@ custom_minimum_size = Vector2(0, 340)
 script = ExtResource("2")
 title = "Connection closed"
 closable = true
-[node name="Heading" type="Label" parent="Stack/Content"]
+[node name="Heading" type="Label" parent="Stack/ContentMargin/Content"]
 unique_name_in_owner = true
 layout_mode = 2
 theme_override_font_sizes/font_size = 22
 text = "Connection closed"
 autowrap_mode = 3
-[node name="BodyFrame" type="PanelContainer" parent="Stack/Content"]
+[node name="BodyFrame" type="PanelContainer" parent="Stack/ContentMargin/Content"]
 layout_mode = 2
 size_flags_vertical = 3
 theme_type_variation = &"Inset"
-[node name="Body" type="RichTextLabel" parent="Stack/Content/BodyFrame"]
+[node name="Body" type="RichTextLabel" parent="Stack/ContentMargin/Content/BodyFrame"]
 unique_name_in_owner = true
 layout_mode = 2
 custom_minimum_size = Vector2(0, 220)
 selection_enabled = true
 bbcode_enabled = false
-[node name="Actions" type="HBoxContainer" parent="Stack/Content"]
+[node name="Actions" type="HBoxContainer" parent="Stack/ContentMargin/Content"]
 layout_mode = 2
 alignment = 2
-[node name="Primary" parent="Stack/Content/Actions" instance=ExtResource("3")]
+[node name="Primary" parent="Stack/ContentMargin/Content/Actions" instance=ExtResource("3")]
 unique_name_in_owner = true
 layout_mode = 2
 text = "Restart mission"
-[node name="Secondary" parent="Stack/Content/Actions" instance=ExtResource("3")]
+[node name="Secondary" parent="Stack/ContentMargin/Content/Actions" instance=ExtResource("3")]
 unique_name_in_owner = true
 layout_mode = 2
 text = "View dictionary"
-[connection signal="pressed" from="Stack/Content/Actions/Primary" to="." method="_on_primary"]
-[connection signal="pressed" from="Stack/Content/Actions/Secondary" to="." method="_on_secondary"]
+[connection signal="pressed" from="Stack/ContentMargin/Content/Actions/Primary" to="." method="_on_primary"]
+[connection signal="pressed" from="Stack/ContentMargin/Content/Actions/Secondary" to="." method="_on_secondary"]

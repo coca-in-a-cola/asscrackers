@@ -2,33 +2,36 @@
 
 ## Layout
 
+`boot.tscn` is the project entry point. It first shows `start_screen.tscn` with its own dark, grid-based cyberpunk theme and credits. The first accepted input creates the desktop below and starts music synchronously. No audio player or mission exists before that gesture. Restart operates inside the existing desktop. See [startup and audio](startup-audio.md).
+
 ```text
 main.tscn
 ├── Background                 desktop_background.gd, teal gradient + 48px grid
 ├── DesktopIcons               five PNG shortcuts, activation/help requests
-├── Applications               desktop_windows.gd owns fixed geometry + activation
-│   ├── terminal.tscn          log, relay exposure, Run, statusbar
+├── Applications               desktop_windows.gd owns open/close/drag + activation
+│   ├── terminal.tscn          botnet, known account, requests, Run/Stop, Exposure
 │   ├── dictionary.tscn        checkbox, six persistent slots, input + feedback
 │   ├── operator.tscn          self-portrait from operator.tres
-│   └── dossier.tscn           public mission facts + hint
-├── taskbar.tscn               Help, Result, FX, Synth, Mute, volume, state
+│   └── dossier.tscn           discovered/retrieved recon graph
+├── intel_detail.tscn          owned, leaf-anchored source information/query window
+├── taskbar.tscn               application buttons + global Exposure/time/Stop
 ├── DialogLayer
 │   ├── modal_layer.tscn / result.tscn
 │   └── modal_layer.tscn / help.tscn
 └── retro_effects.tscn         CanvasLayer 90, dithering → CRT
 ```
 
-`Applications` is a custom Container: it places compact windows using `fit_child_in_rect`, with a separate compact arrangement below 1250px width or 780px available height. At 1440×900, terminal is 600×300, dictionary 600×366, profile 350×156 and dossier 430×528. Larger screens center this group instead of stretching its contents. At 1024×720, workspace and record widths adapt without overlapping controls. HBox/VBox/Grid/Scroll/Center containers still own geometry inside each application.
+`Applications` is a plain Control with a window manager, not a layout Container. Initial positions and sizes are chosen once; titlebars subsequently move windows without resizing them. Their usable bounds leave the two-row taskbar accessible. Resizing the game viewport clamps window positions, preserving their dimensions. Overlap is intentional and controlled by active-window draw order. Containers still own geometry inside applications.
 
-The grid remains visible with FX disabled. Desktop shortcuts activate applications and raise their draw order; titlebar clicks also activate windows. `Read Me` opens help. Positioning, activation and existing close-request signals are separate from application content, providing an extension point for future dragging, minimizing and opening/closing. Current application positions are fixed.
+Shortcuts and taskbar buttons open or activate existing application instances. X hides an application; it never deletes its controls or stops domain work. Closing the active window activates another visible window. Dragging is bounded to keep windows accessible; modal dialogs cancel any active drag. Recon's leaf subwindow follows its owner and graph scrolling, stays inside usable screen bounds and hides when its owner closes or another application is activated. Read Me opens modal help.
 
 The project uses `canvas_items` stretch mode for the CRT pipeline. The root window's content-scale size tracks its actual size, keeping small fonts at native pixel density when resized. Portrait remains square and preserves its aspect ratio. Dialogs center over a blocking scrim and keep keyboard focus inside their controls. Escape closes dialogs and restores focus.
 
 ## Reusable primitives
 
-The window consists of `window_background.tscn`, `titlebar.tscn`, and a content container. The titlebar composes an independent icon, title Label and optional close button. Buttons have their own background Panel, border style, label and optional native Button icon. Labels are never rasterized into the game interface.
+The window consists of `window_background.tscn`, `titlebar.tscn`, and `Stack/ContentMargin/Content`. Content has 12px horizontal and 10px vertical margins, separate from the titlebar. Wrapped labels are first given a real width before the manager fixes window height, avoiding transient zero-width minimum-size expansion. The titlebar composes an independent icon, title Label and close button. Buttons retain separate backgrounds, borders and text.
 
-Each fragment slot has a status Label, word Label and separate remove Button. Its `remove_requested(fragment)` signal travels up to the dictionary panel, then to the game orchestrator. Slots are authored once in the scene and updated in place. Fact cards are instantiated only when mission data changes; they never mutate domain data or insert fragments automatically.
+Fragment slots remain persistent and never insert data automatically. Graph node buttons are keyed by stable fact IDs, created only when a source becomes discoverable and updated after a purchase. Graph extents grow with visible nodes; their authored positions do not jump. Edges are drawn behind the buttons. All information requests travel through main to GameSession; graph and detail windows never charge Exposure themselves.
 
 ## Exported kit mapping
 
@@ -59,11 +62,11 @@ Each fragment slot has a status Label, word Label and separate remove Button. It
 
 ## Data ownership
 
-- Domain services continue owning mission, dictionary, candidate queue and exposure.
+- ExposureBudget owns the ledger shared by IntelService and AttackEngine. GameSession owns their lifecycle and runtime clock.
 - Main orchestrator listens to domain signals, handles UI requests and passes display data down.
 - `OperatorProfile` / `data/ui/operator.tres` owns the portrait, filename, display name and description.
 - `DesktopCopy` / `data/ui/help.tres` owns tutorial copy, location and idle voice lines.
-- Dossier reads `public_mission`; hidden solution remains in the domain session.
+- `public_mission` contains known identity/account/task only. Recon snapshots contain metadata for discoverable nodes and content for purchased nodes only. Undiscovered nodes and hidden solution never reach the graph.
 - Theme and profile definitions are read-only shared resources. No runtime theme construction or per-refresh scene reconstruction.
 
 ## Verification
@@ -73,6 +76,7 @@ godot --headless --path . --editor --import --quit
 godot --headless --path . --script res://tests/run_tests.gd
 godot --headless --path . --script res://tests/ui_components.gd
 godot --path . --script res://tests/ui_smoke.gd -- --capture-dir=<existing directory> --webp
+godot --path . --script res://tests/startup_audio.gd -- --capture-dir=<existing directory>
 ```
 
-Component test instantiates every UI scene under a neutral host, waits for ready and frees it. UI smoke covers add/remove, special rules, locked running state, success/trace, restart, FX/audio preferences, literal fragment rendering, log scrolling, persistent slot identities, avatar source/aspect and modal keyboard focus. It also sends real viewport mouse events to shortcuts/titlebars, checks application bounds and non-overlap at 1024×720, 1440×900 and 1920×1080, and captures the desktop with FX both off and on.
+Component tests instantiate each UI scene under a neutral host. UI smoke sends viewport mouse events for dragging, X, reopening, graph selection, paid queries and global Stop. It verifies fixed sizes, persistent window identities/positions, padding and bounds at 1024×720, 1440×900 and 1920×1080, bought information after closing/reopening, modal focus, background work and presentation preferences. Domain timing tests use explicit deltas; one tiny graphical run also exercises the real background clock.

@@ -6,4 +6,4 @@ script = ExtResource("1")
 display_name = "YOU / LOCAL OPERATOR"
 portrait = ExtResource("2")
 filename = "self-portrait.png"
-description = "PERM-2091 · rented compute relay\nA familiar face. An unfamiliar shift."
+description = "PERM-2091 · 24 botnet relays\nA familiar face. An unfamiliar shift."

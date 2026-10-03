@@ -2,51 +2,46 @@
 [ext_resource type="PackedScene" path="res://scenes/ui/components/window.tscn" id="1"]
 [ext_resource type="Script" path="res://scripts/ui/components/dossier_panel.gd" id="2"]
 [ext_resource type="Texture2D" path="res://assets/ui/windows95/icons/icons--icon-small-search-in-pc--2-993.png" id="3"]
-[ext_resource type="PackedScene" path="res://scenes/ui/components/fact_card.tscn" id="4"]
+[ext_resource type="Script" path="res://scripts/ui/components/intel_graph.gd" id="4"]
 [ext_resource type="PackedScene" path="res://scenes/ui/atoms/statusbar.tscn" id="5"]
 [node name="Dossier" instance=ExtResource("1")]
-size_flags_vertical = 3
 script = ExtResource("2")
-title = "G-D's Eye — Dossier 001"
+title = "G-D's Eye — Recon graph"
 window_icon = ExtResource("3")
-fact_scene = ExtResource("4")
-[node name="TargetRow" type="HBoxContainer" parent="Stack/Content"]
-layout_mode = 2
-[node name="Target" type="Label" parent="Stack/Content/TargetRow"]
-unique_name_in_owner = true
-layout_mode = 2
-size_flags_horizontal = 3
-text = "ALEX / LEXA"
-autowrap_mode = 3
-[node name="ReadOnly" type="Label" parent="Stack/Content/TargetRow"]
-layout_mode = 2
-theme_type_variation = &"SmallText"
-text = "READ ONLY"
-[node name="Brief" type="Label" parent="Stack/Content"]
+[node name="Target" type="Label" parent="Stack/ContentMargin/Content"]
 unique_name_in_owner = true
 layout_mode = 2
 theme_type_variation = &"SmallText"
-text = "Read the dossier to infer password fragments."
+text = "KNOWN IDENTITY / ACCOUNT"
 autowrap_mode = 3
-[node name="Scroll" type="ScrollContainer" parent="Stack/Content"]
-unique_name_in_owner = true
-custom_minimum_size = Vector2(0, 80)
+[node name="Brief" type="Label" parent="Stack/ContentMargin/Content"]
+layout_mode = 2
+theme_type_variation = &"SmallText"
+text = "Click a source. Queries cost Exposure; retrieved information is free to read."
+autowrap_mode = 3
+[node name="GraphFrame" type="PanelContainer" parent="Stack/ContentMargin/Content"]
 layout_mode = 2
 size_flags_vertical = 3
-horizontal_scroll_mode = 0
-[node name="Facts" type="VBoxContainer" parent="Stack/Content/Scroll"]
-unique_name_in_owner = true
-layout_mode = 2
-size_flags_horizontal = 3
-[node name="VoiceFrame" type="PanelContainer" parent="Stack/Content"]
-layout_mode = 2
 theme_type_variation = &"Inset"
-[node name="Voice" type="Label" parent="Stack/Content/VoiceFrame"]
+[node name="Scroll" type="ScrollContainer" parent="Stack/ContentMargin/Content/GraphFrame"]
+unique_name_in_owner = true
+custom_minimum_size = Vector2(0, 180)
+layout_mode = 2
+size_flags_vertical = 3
+focus_mode = 2
+[node name="Graph" type="Control" parent="Stack/ContentMargin/Content/GraphFrame/Scroll"]
+unique_name_in_owner = true
+custom_minimum_size = Vector2(440, 360)
+layout_mode = 2
+mouse_filter = 2
+script = ExtResource("4")
+[node name="Voice" type="Label" parent="Stack/ContentMargin/Content"]
 unique_name_in_owner = true
 layout_mode = 2
 theme_type_variation = &"SmallText"
-text = "The cat is not on your payroll."
+text = "Every source leaves a footprint."
 autowrap_mode = 3
-[node name="Statusbar" parent="Stack/Content" instance=ExtResource("5")]
+[node name="Statusbar" parent="Stack/ContentMargin/Content" instance=ExtResource("5")]
+unique_name_in_owner = true
 layout_mode = 2
-text = "Public records / no automatic fragment insertion"
+text = "Recon / shared Exposure budget"

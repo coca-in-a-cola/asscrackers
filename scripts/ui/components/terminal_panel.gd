@@ -7,3 +7,5 @@ extends "res://scripts/ui/components/window.gd"
 @onready var exposure_label: Label = %Exposure
 @onready var exposure_bar: ProgressBar = %ExposureBar
 @onready var budget_label: Label = %Budget
+@onready var target_label: Label = %TargetLabel
+@onready var stop_button: Button = %Stop

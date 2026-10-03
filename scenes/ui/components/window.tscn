@@ -11,7 +11,15 @@ theme_override_constants/separation = 4
 [node name="Titlebar" parent="Stack" instance=ExtResource("2")]
 unique_name_in_owner = true
 layout_mode = 2
-[node name="Content" type="VBoxContainer" parent="Stack"]
+[node name="ContentMargin" type="MarginContainer" parent="Stack"]
+layout_mode = 2
+size_flags_vertical = 3
+mouse_filter = 1
+theme_override_constants/margin_left = 12
+theme_override_constants/margin_top = 10
+theme_override_constants/margin_right = 12
+theme_override_constants/margin_bottom = 10
+[node name="Content" type="VBoxContainer" parent="Stack/ContentMargin"]
 unique_name_in_owner = true
 layout_mode = 2
 size_flags_vertical = 3

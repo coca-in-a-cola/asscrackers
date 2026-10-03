@@ -1,0 +1,19 @@
+[remap]
+
+importer="mp3"
+type="AudioStreamMP3"
+uid="uid://bmgkgtntrh8bi"
+path="res://.godot/imported/Karl Casey - Sycophant.mp3-08bef8e9d39a954560a808bcd43298b8.mp3str"
+
+[deps]
+
+source_file="res://assets/sfx/Karl Casey - Sycophant.mp3"
+dest_files=["res://.godot/imported/Karl Casey - Sycophant.mp3-08bef8e9d39a954560a808bcd43298b8.mp3str"]
+
+[params]
+
+loop=false
+loop_offset=0
+bpm=0
+beat_count=0
+bar_beats=4

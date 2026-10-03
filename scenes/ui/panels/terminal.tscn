@@ -6,50 +6,61 @@
 [ext_resource type="Texture2D" path="res://assets/ui/windows95/icons/icons--icon-small-run-program--2-730.png" id="5"]
 [ext_resource type="PackedScene" path="res://scenes/ui/atoms/statusbar.tscn" id="6"]
 [node name="Terminal" instance=ExtResource("1")]
-size_flags_vertical = 3
 script = ExtResource("2")
-title = "hashdog.exe — Offline SHA-256"
+title = "hashdog.exe — Botnet console"
 window_icon = ExtResource("4")
-[node name="Toolbar" type="HBoxContainer" parent="Stack/Content"]
+[node name="TargetLabel" type="Label" parent="Stack/ContentMargin/Content"]
+unique_name_in_owner = true
 layout_mode = 2
-[node name="Command" type="Label" parent="Stack/Content/Toolbar"]
+theme_type_variation = &"SmallText"
+text = "TARGET SERVICE / KNOWN ACCOUNT"
+autowrap_mode = 3
+[node name="Toolbar" type="HBoxContainer" parent="Stack/ContentMargin/Content"]
+layout_mode = 2
+[node name="Command" type="Label" parent="Stack/ContentMargin/Content/Toolbar"]
 layout_mode = 2
 size_flags_horizontal = 3
-text = "$ hashdog run"
+text = "BOTNET / 24 relays"
 theme_type_variation = &"SmallText"
-[node name="Run" parent="Stack/Content/Toolbar" instance=ExtResource("3")]
+[node name="Run" parent="Stack/ContentMargin/Content/Toolbar" instance=ExtResource("3")]
 unique_name_in_owner = true
 layout_mode = 2
 text = "Run dictionary"
 icon = ExtResource("5")
-[node name="Metrics" type="HBoxContainer" parent="Stack/Content"]
+[node name="Stop" parent="Stack/ContentMargin/Content/Toolbar" instance=ExtResource("3")]
+unique_name_in_owner = true
 layout_mode = 2
-[node name="Exposure" type="Label" parent="Stack/Content/Metrics"]
+text = "Stop"
+disabled = true
+[node name="Metrics" type="HBoxContainer" parent="Stack/ContentMargin/Content"]
+layout_mode = 2
+[node name="Exposure" type="Label" parent="Stack/ContentMargin/Content/Metrics"]
 unique_name_in_owner = true
 layout_mode = 2
 size_flags_horizontal = 3
-text = "EXPOSURE  00 / 100"
+text = "EXPOSURE  0.0 / 100"
 theme_type_variation = &"MetricsText"
-[node name="Budget" type="Label" parent="Stack/Content/Metrics"]
+[node name="Budget" type="Label" parent="Stack/ContentMargin/Content/Metrics"]
 unique_name_in_owner = true
 layout_mode = 2
 text = "POOL 0 / 1956"
 theme_type_variation = &"MetricsText"
-[node name="ExposureBar" type="ProgressBar" parent="Stack/Content"]
+[node name="ExposureBar" type="ProgressBar" parent="Stack/ContentMargin/Content"]
 unique_name_in_owner = true
 layout_mode = 2
 custom_minimum_size = Vector2(0, 12)
+step = 0.01
 show_percentage = false
-[node name="TerminalSurface" type="PanelContainer" parent="Stack/Content"]
+[node name="TerminalSurface" type="PanelContainer" parent="Stack/ContentMargin/Content"]
 layout_mode = 2
 size_flags_vertical = 3
 custom_minimum_size = Vector2(0, 60)
 theme_type_variation = &"Inset"
-[node name="Background" type="ColorRect" parent="Stack/Content/TerminalSurface"]
+[node name="Background" type="ColorRect" parent="Stack/ContentMargin/Content/TerminalSurface"]
 layout_mode = 2
 mouse_filter = 2
 color = Color(0.145098, 0.192157, 0.227451, 1)
-[node name="Log" type="RichTextLabel" parent="Stack/Content/TerminalSurface"]
+[node name="Log" type="RichTextLabel" parent="Stack/ContentMargin/Content/TerminalSurface"]
 unique_name_in_owner = true
 layout_mode = 2
 size_flags_horizontal = 3
@@ -57,7 +68,8 @@ size_flags_vertical = 3
 theme_type_variation = &"TerminalText"
 selection_enabled = true
 bbcode_enabled = false
-[node name="Forecast" parent="Stack/Content" instance=ExtResource("6")]
+focus_mode = 2
+[node name="Forecast" parent="Stack/ContentMargin/Content" instance=ExtResource("6")]
 unique_name_in_owner = true
 layout_mode = 2
-text = "Ready · offline SHA-256 · +10 exposure/job, +5 exhausted"
+text = "Ready / known login / dictionary candidates"

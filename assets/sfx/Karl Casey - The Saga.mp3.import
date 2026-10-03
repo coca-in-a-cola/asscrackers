@@ -1,0 +1,19 @@
+[remap]
+
+importer="mp3"
+type="AudioStreamMP3"
+uid="uid://cdmrvknl6mms8"
+path="res://.godot/imported/Karl Casey - The Saga.mp3-84d57d335e5aaa6b50480fe9267c405a.mp3str"
+
+[deps]
+
+source_file="res://assets/sfx/Karl Casey - The Saga.mp3"
+dest_files=["res://.godot/imported/Karl Casey - The Saga.mp3-84d57d335e5aaa6b50480fe9267c405a.mp3str"]
+
+[params]
+
+loop=false
+loop_offset=0
+bpm=0
+beat_count=0
+bar_beats=4

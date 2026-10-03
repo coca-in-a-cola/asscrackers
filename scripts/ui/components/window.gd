@@ -3,6 +3,7 @@ extends PanelContainer
 
 signal close_requested
 signal activation_requested
+signal drag_started(screen_position: Vector2)
 
 @export var title := "Untitled":
 	set(value):
@@ -31,6 +32,7 @@ func _ready() -> void:
 	%Titlebar.closable = closable
 	%Titlebar.active = active
 	%Titlebar.activation_requested.connect(_on_activation_requested)
+	%Titlebar.drag_started.connect(func(point: Vector2): drag_started.emit(point))
 
 func _gui_input(event: InputEvent) -> void:
 	if event is InputEventMouseButton and event.pressed and event.button_index == MOUSE_BUTTON_LEFT:
