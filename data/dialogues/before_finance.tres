@@ -1,0 +1,14 @@
+[gd_resource type="Resource" script_class="DialogueEntry" load_steps=7 format=3]
+[ext_resource type="Script" path="res://scripts/ui/data/dialogue_entry.gd" id="1"]
+[ext_resource type="DialogueResource" path="res://data/dialogues/campaign.dialogue" id="2"]
+[ext_resource type="Resource" path="res://data/dialogues/characters/player.tres" id="3"]
+[ext_resource type="Resource" path="res://data/dialogues/characters/curator.tres" id="4"]
+[ext_resource type="Resource" path="res://data/dialogues/presentation.tres" id="5"]
+[ext_resource type="Script" path="res://scripts/ui/data/dialogue_character.gd" id="6"]
+[resource]
+script = ExtResource("1")
+id = &"before_finance"
+dialogue = ExtResource("2")
+start_cue = "before_finance"
+characters = Array[ExtResource("6")]([ExtResource("3"), ExtResource("4")])
+presentation = ExtResource("5")

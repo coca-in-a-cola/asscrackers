@@ -1,0 +1,8 @@
+{
+  "repository": "https://github.com/nathanhoad/godot_dialogue_manager",
+  "version": "v4.1.0",
+  "archive": "https://codeload.github.com/nathanhoad/godot_dialogue_manager/zip/refs/tags/v4.1.0",
+  "archive_sha256": "48cdc626e01a91dce21bfc905900edf634ba3b93d979663565bbb4388d5afd1a",
+  "license": "MIT",
+  "patches": ["PATCHES.md: isolate runtime line dictionaries"]
+}

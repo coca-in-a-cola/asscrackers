@@ -4,11 +4,21 @@ signal start_requested(event: InputEvent)
 
 var accepted := false
 var _prompt_tween: Tween
+@onready var _music: Node = Engine.get_singleton("MusicManager")
 
 func _ready() -> void:
-	$Margin/Stack/Footer/Audio.text = "SOUNDTRACK // %02d FILES" % MusicManager.track_count()
+	$Margin/Stack/Footer/Audio.text = "SOUNDTRACK // %02d FILES" % _music.track_count()
 	resized.connect(_update_layout)
 	_update_layout()
+	reset()
+
+func reset() -> void:
+	accepted = false
+	set_process_input(true)
+	show()
+	if _prompt_tween != null and _prompt_tween.is_valid():
+		_prompt_tween.kill()
+	%Prompt.modulate.a = 1.0
 	_prompt_tween = create_tween().set_loops()
 	_prompt_tween.tween_property(%Prompt, "modulate:a", 0.6, 0.8).set_trans(Tween.TRANS_SINE)
 	_prompt_tween.tween_property(%Prompt, "modulate:a", 1.0, 0.8).set_trans(Tween.TRANS_SINE)

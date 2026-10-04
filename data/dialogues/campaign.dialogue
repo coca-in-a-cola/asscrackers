@@ -1,0 +1,43 @@
+~ after_hr
+Curator: Layoff order received. Congratulations. You have saved a department from becoming a spreadsheet footnote.
+Player: Do I get paid now?
+Curator: You get the next assignment. Corporate tradition.
+=> END
+
+~ before_finance
+Curator: Finance. Mira's payroll account. Retrieve the corrected payment register.
+Player: More numbers. Comforting.
+Curator: Names and numbers are habits. Read the sources, build a tight pool, and don't query the entire fucking internet.
+Player: Small dictionary. Small footprint. Got it.
+=> END
+
+~ after_finance
+Curator: Payment register received. The amounts finally agree with the paperwork.
+Player: A miracle in Finance?
+Curator: Don't get sentimental. One archive copy left.
+=> END
+
+~ before_vault
+Curator: Last target. Oleg, records custodian. The signed archive copy is in the Executive Vault.
+Player: That sounds less like intern work.
+Curator: The service is slower. The human is still human. Look for a memorable name, a year, and his favourite little punctuation mark.
+Player: Then I submit the file and go home.
+Curator: Submit the file first. We can negotiate the fantasy afterwards.
+=> END
+
+~ after_vault
+Curator: Signed archive copy received. Three files, three accounts, one finished assignment.
+Player: Is that the end of onboarding?
+Curator: For today. Let me see how much of yourself you left on the servers.
+=> END
+
+~ ending
+if Campaign.final_mark == "A"
+	Curator: Clean work, trainee. Keep this up and I might learn your name.
+elif Campaign.final_mark == "B"
+	Curator: You got the files. Next time, leave less of yourself behind.
+elif Campaign.final_mark == "C"
+	Curator: Results delivered. Your footprints need their own fucking department.
+else
+	Curator: The job is done. Your discretion, on the other hand, needs urgent medical attention.
+=> END

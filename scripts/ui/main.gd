@@ -1,6 +1,13 @@
 extends Control
 
 @export var copy: DesktopCopy
+@export var goal: CampaignGoal
+@export var grading: GradingPolicy
+signal dialogue_requested(entry: DialogueEntry)
+signal mission_ended(snapshot: Dictionary)
+signal result_submitted
+signal return_requested
+@onready var _music: Node = Engine.get_singleton("MusicManager")
 
 @onready var session: Node = %Session
 @onready var audio: Node = %Audio
@@ -35,10 +42,13 @@ var selected_intel := ""
 var effects_enabled := true
 var mission_ready := false
 var intro_pending := false
+var dialogue_active := false
 var log_lines: Array[Dictionary] = []
 var _follow_pending := false
 var _log_scroll_ticket := 0
 var voice_index := 0
+var _result_snapshot: Dictionary = {}
+var _submitted := false
 
 func _ready() -> void:
 	get_window().min_size = Vector2i(1024, 720)
@@ -48,13 +58,14 @@ func _ready() -> void:
 	session.changed.connect(_refresh)
 	session.intel_changed.connect(_refresh_intel)
 	session.ended.connect(_on_end)
+	%IntelDetail.presentation_ready.connect(_position_intel_popup)
 	run_button.pressed.connect(_run_dictionary)
 	%Terminal.stop_button.pressed.connect(_stop_attack)
 	log_view.gui_input.connect(_log_scroll_input)
 	log_view.get_v_scroll_bar().gui_input.connect(_log_scroll_input)
 	%Help.body.text = copy.help_text
 	%Taskbar.location_label.text = "ASS / CRACKERS · " + copy.location
-	MusicManager.changed.connect(_sync_audio_controls)
+	_music.changed.connect(_sync_audio_controls)
 	_sync_audio_controls()
 	_restart()
 
@@ -70,12 +81,13 @@ func _color(role: String) -> Color:
 
 func _set_effects(enabled: bool) -> void:
 	effects_enabled = enabled
+	effects_toggle.set_pressed_no_signal(enabled)
 	background.effects_enabled = enabled
 	background.queue_redraw()
 	%RetroEffects.visible = enabled
 
 func _activate_application(application_name: StringName) -> void:
-	if intro_pending:
+	if intro_pending or dialogue_active:
 		return
 	if not %Applications.layout_is_ready():
 		await %Applications.layout_ready
@@ -109,27 +121,15 @@ func _select_intel(id: String) -> void:
 	selected_intel = id
 	%Applications.focus_application(&"Dossier")
 	dossier.select_node(id)
-	%IntelDetail.show()
-	_refresh_intel_popup()
-	_position_intel_popup()
-	_settle_intel_popup()
-
-func _settle_intel_popup() -> void:
-	# Reflow wrapped source labels at the final width before fixing the height.
-	await get_tree().process_frame
-	await get_tree().process_frame
-	if not %IntelDetail.visible:
-		return
-	%IntelDetail.size = Vector2(340, 300).max(%IntelDetail.get_combined_minimum_size())
+	_refresh_intel_popup(true)
 	_position_intel_popup()
 
-func _refresh_intel_popup() -> void:
-	if selected_intel.is_empty() or not %IntelDetail.visible:
+func _refresh_intel_popup(open := false) -> void:
+	if selected_intel.is_empty() or (not open and not %IntelDetail.visible):
 		return
 	for fact in session.recon_snapshot():
 		if fact.id == selected_intel:
-			%IntelDetail.apply(fact, session.budget.value, session.engine.phase in ["READY", "RUNNING"])
-			%IntelDetail.size = Vector2(340, 300).max(%IntelDetail.get_combined_minimum_size())
+			%IntelDetail.present(fact, session.budget.value, session.engine.phase in ["READY", "RUNNING"])
 			return
 	%IntelDetail.hide()
 
@@ -144,7 +144,7 @@ func _position_intel_popup() -> void:
 	%IntelDetail.position = point.clamp(Vector2(8, 8), Vector2(maxf(8, size.x - popup_size.x - 8), maxf(8, %Taskbar.position.y - popup_size.y - 8)))
 
 func _query_intel(id: String) -> void:
-	if intro_pending:
+	if intro_pending or dialogue_active:
 		return
 	var response: Dictionary = session.request_intel(id)
 	if response.get("purchased", false):
@@ -155,14 +155,14 @@ func _stop_attack() -> void:
 	session.stop_attack()
 
 func _set_music(enabled: bool) -> void:
-	MusicManager.set_enabled(enabled)
+	_music.set_enabled(enabled)
 
 func _sync_audio_controls() -> void:
-	audio.set_muted(MusicManager.muted)
-	audio.set_level(MusicManager.level)
-	%Taskbar.music_toggle.set_pressed_no_signal(MusicManager.enabled)
-	%Taskbar.mute_toggle.set_pressed_no_signal(MusicManager.muted)
-	%Taskbar.volume_slider.set_value_no_signal(MusicManager.level)
+	audio.set_muted(_music.muted)
+	audio.set_level(_music.level)
+	%Taskbar.music_toggle.set_pressed_no_signal(_music.enabled)
+	%Taskbar.mute_toggle.set_pressed_no_signal(_music.muted)
+	%Taskbar.volume_slider.set_value_no_signal(_music.level)
 
 func finish_intro() -> void:
 	intro_pending = false
@@ -170,13 +170,13 @@ func finish_intro() -> void:
 	_restore_focus()
 
 func _set_muted(enabled: bool) -> void:
-	MusicManager.set_muted(enabled)
+	_music.set_muted(enabled)
 
 func _set_volume(value: float) -> void:
-	MusicManager.set_level(value)
+	_music.set_level(value)
 
 func _show_help() -> void:
-	if intro_pending:
+	if intro_pending or dialogue_active:
 		return
 	%Applications.cancel_drag()
 	tutorial.show()
@@ -199,7 +199,7 @@ func _hide_result() -> void:
 	_restore_focus()
 
 func _restore_focus() -> void:
-	if intro_pending:
+	if intro_pending or dialogue_active:
 		return
 	if tutorial.visible:
 		%Help.focus_primary()
@@ -217,7 +217,7 @@ func _unhandled_key_input(event: InputEvent) -> void:
 		if tutorial.visible:
 			_hide_help()
 		elif modal.visible:
-			_hide_result()
+			return
 		elif %IntelDetail.visible:
 			%IntelDetail.hide()
 		else:
@@ -231,7 +231,11 @@ func _restart() -> void:
 	%IntelDetail.hide()
 	selected_intel = ""
 	mission_ready = false
-	var loaded: Dictionary = session.restart()
+	_result_snapshot.clear()
+	_submitted = false
+	%Result.configure_action("SUBMIT RESULT")
+	%Result.show_mark("", 0)
+	var loaded: Dictionary = session.start_mission(goal.mission_file)
 	log_lines.clear()
 	log_view.clear()
 	_follow_pending = true
@@ -244,9 +248,7 @@ func _restart() -> void:
 	else:
 		%VoiceTimer.start()
 	if not loaded.ok:
-		modal_title.text = "MISSION DATA ERROR"
-		modal_body.text = loaded.message
-		_show_result()
+		show_campaign_error(loaded.message)
 		_refresh()
 		return
 	mission_ready = true
@@ -255,6 +257,7 @@ func _restart() -> void:
 	_log("TARGET / %s / %s" % [session.service.display_name, session.public_mission.login], "system")
 	_log("24 botnet relays ready. Recon queries and login attempts share Exposure.", "success")
 	_log(session.public_mission.brief, "system")
+	%Taskbar.location_label.text = "ASS / CRACKERS · " + goal.title
 	_set_feedback("Investigate G-D's Eye. Add fragments; a smaller pool costs less.")
 	voice.text = "“Every source leaves a footprint. So does every login.” — ?"
 	_refresh_intel()
@@ -262,7 +265,7 @@ func _restart() -> void:
 	_restore_focus()
 
 func _submit_fragment(value: String) -> Dictionary:
-	if intro_pending:
+	if intro_pending or dialogue_active:
 		return {"ok": false, "message": "Wait for the briefing to finish."}
 	var response: Dictionary = session.add_fragment(value)
 	_set_feedback(response.message, not response.ok)
@@ -288,7 +291,7 @@ func _toggle_special_characters(enabled: bool) -> void:
 	_set_feedback(response.message, not response.ok)
 
 func _run_dictionary() -> void:
-	if intro_pending:
+	if intro_pending or dialogue_active:
 		return
 	if not input.text.strip_edges().is_empty():
 		_set_feedback("You have an unsaved fragment. Press Enter to save it, or clear the input first.", true)
@@ -337,7 +340,7 @@ func _refresh() -> void:
 	elif model.phase == "RUNNING":
 		forecast_label.text = "BOTNET / %d/%d sent / %.2f s left / Stop saves unsent requests" % [model.index, model.queue.size(), model.remaining]
 	else:
-		forecast_label.text = "Session closed. Restart to try again."
+		forecast_label.text = "Session closed. Submit the result or return to title."
 	forecast_label.tooltip_text = forecast_label.text
 	_refresh_intel_popup()
 	_refresh_chips()
@@ -396,27 +399,69 @@ func _settle_log_scroll(ticket: int, follow: bool, previous: float) -> void:
 
 func _on_end(result: String) -> void:
 	tutorial.hide()
+	_result_snapshot = session.result_snapshot()
+	_submitted = false
 	var titles := {"SUCCESS": "ACCESS GRANTED", "TRACE": "TRACE DETECTED"}
 	modal_title.text = titles[result]
 	modal_title.add_theme_color_override("font_color", _color("success" if result == "SUCCESS" else "error"))
 	var detail := ""
 	if result == "SUCCESS":
 		var solved: Dictionary = session.victory_details()
-		detail = "Password: %s\n\n%s\n\nLayoff order retrieved. The department lives another day.\nBarsik wants a promotion to Chief Scratching Officer." % [solved.password, solved.explanation]
+		detail = "Password: %s\n\n%s\n\n%s" % [solved.password, solved.explanation, goal.success_text]
 		detail += "\n\nFragments: %s · Rule: %s" % [" + ".join(session.engine.match_record.sources), session.engine.match_record.rule]
 	else:
 		detail = "Your botnet and recon sources were correlated by the target service.\nThe operation reached 100 Exposure."
-		detail += "\n\n“Don't worry. The report will call you an unknown idiot.”\n— a voice from the air vent\n\nRead the clues again and try a different set of fragments."
+		detail += "\n\nGAME OVER. The assignment is terminated.\nReturn to the initial screen to start a new campaign."
+	%Result.show_mark(grading.mark_for_units(session.budget.units) if result == "SUCCESS" else "", session.budget.value)
+	%Result.configure_action("SUBMIT RESULT" if result == "SUCCESS" else "RETURN TO TITLE")
+	if result == "TRACE":
+		modal_title.text = "GAME OVER / TRACE DETECTED"
 	modal_body.text = detail + "\n\nLogin requests: %d · Jobs: %d · Exposure: %.2f/100" % [session.engine.attempts_used, session.engine.runs_used, session.engine.exposure]
 	result_button.show()
 	_show_result()
-	_set_feedback("Session closed. Restart the mission to try again.")
+	_set_feedback("Submit your result to continue." if result == "SUCCESS" else "Game over. Return to title.")
 	audio.play("success" if result == "SUCCESS" else "fail")
 	_log(titles[result], "success" if result == "SUCCESS" else "error")
+	mission_ended.emit(_result_snapshot.duplicate(true))
+
+func _result_primary() -> void:
+	if _submitted or _result_snapshot.is_empty() or dialogue_active:
+		return
+	if _result_snapshot.result == "TRACE":
+		return_requested.emit()
+		return
+	_submitted = true
+	%Result.configure_action("SUBMITTED", true)
+	result_submitted.emit()
+
+func load_goal(data: CampaignGoal) -> bool:
+	goal = data
+	intro_pending = true
+	dialogue_active = true
+	for window in %Applications.get_children():
+		%Applications.close_application(StringName(window.name))
+	_restart()
+	return mission_ready
+
+func request_dialogue(entry: DialogueEntry) -> bool:
+	if intro_pending or dialogue_active or entry == null or not entry.valid() or not dialogue_requested.has_connections():
+		return false
+	dialogue_requested.emit(entry)
+	return true
+
+func show_campaign_error(message: String) -> void:
+	_result_snapshot = {"result": "TRACE"}
+	_submitted = false
+	%Result.show_mark("", 0)
+	%Result.configure_action("RETURN TO TITLE")
+	modal_title.text = "CAMPAIGN DATA ERROR"
+	modal_body.text = message
+	dialogue_active = false
+	_show_result()
 
 func _on_voice_timeout() -> void:
 	%VoiceTimer.wait_time = 32.0
-	if session.engine.phase not in ["READY", "RUNNING"] or copy.idle_voices.is_empty():
+	if dialogue_active or session.engine.phase not in ["READY", "RUNNING"] or copy.idle_voices.is_empty():
 		return
 	voice.text = copy.idle_voices[voice_index % copy.idle_voices.size()]
 	voice_index += 1

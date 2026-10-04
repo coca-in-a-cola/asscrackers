@@ -4,7 +4,7 @@ A cyberpunk password-recovery puzzle with corporate black humour and an unreliab
 
 ## Play
 
-Press any key on the silent entry screen (click, touch and gamepad buttons also work). Sycophant starts, the screen fades to black, and the player/curator appear for the first briefing. The entry screen credits, in order:
+Press any key on the silent entry screen (click, touch and gamepad buttons also work). Sycophant starts, the screen fades to black, and the curator opens the briefing. The player's portrait appears with their first reply. The entry screen credits, in order:
 
 ```text
 made by mice-seller
@@ -47,13 +47,25 @@ The task supplies the target account and service. The terminal presents fictiona
 
 Recon and botnet requests share **Exposure 0–100**. Launch costs **2**, each sent login request costs **18 / 1956**, and a full pass costs **20**. Recon has a per-node price, charged once; repeat reading is free. At 100 the operation is traced. Stop and early success save the cost of unsent requests; exhausted pools have no extra penalty. Save or clear an unsaved draft before launching.
 
-FX, Music, Mute and master volume remain available. Restart clears words, rules and session resources but keeps these presentation preferences and the soundtrack's current position.
+FX, Music, Mute and master volume remain available. Each new target clears words, rules, recon and Exposure while preserving presentation preferences, window positions and background music.
+
+## Campaign and marks
+
+Three targets: **HR / Lexa → Finance / Mira → Executive Vault / Oleg**. On success,
+review the result and large **MARK**, then press **SUBMIT RESULT** to deliver the file
+and continue through the curator's debrief/next briefing. There is no automatic
+advance or mission-retry button. Exposure ≤25 earns A, ≤50 B, ≤75 C, otherwise D;
+100 is **TRACE / GAME OVER**, returning to the silent initial screen.
+
+After the third submission, the curator delivers one grade-specific line and the
+campaign summary shows all three results. The final mark uses **mean Exposure**,
+not mean letters, without rounding before comparison. [Campaign rules and authoring](docs/campaign.md).
 
 ## Soundtrack
 
 **Sycophant** accompanies the entire intro, repeating if reading takes longer than the song. At handoff it crossfades over 1.5 seconds into **Hackers → New Beginnings → The Saga → repeat**, by Karl Casey / White Bat audio. Background tracks overlap for 0.75 seconds. The scene Autoload **MusicManager** owns playback; its exported MusicCue resources are editable in Inspector (`data/audio/intro.tres`, `background.tres`). Music pauses/resumes from the taskbar; Mute silences music and action effects while playback continues. Volume zero is silent. Short generated action effects remain.
 
-Before input the singleton's players are idle; there is no desktop or mission. The entry gesture starts playback synchronously. Entry and handoff held keys are consumed until release so they cannot type a fragment or open an application accidentally. Mission restart never returns to the intro or resets playback. See [intro and audio architecture](docs/startup-audio.md).
+Before input the singleton's players are idle; there is no desktop or mission. The entry gesture starts playback synchronously. Entry and handoff held keys are consumed until release so they cannot type a fragment or open an application accidentally. Target transitions preserve playback; returning to title stops it, clears campaign progress and enables the full intro on a new game. See [intro and audio architecture](docs/startup-audio.md).
 
 ## Desktop
 
@@ -74,6 +86,8 @@ godot --headless --path . --script res://tests/run_tests.gd
 godot --headless --path . --script res://tests/ui_components.gd
 godot --path . --max-fps 60 --quit-after 3000 --script res://tests/ui_smoke.gd
 godot --path . --max-fps 60 --quit-after 3000 --script res://tests/startup_audio.gd
+godot --headless --path . --max-fps 60 --quit-after 2400 --script res://tests/campaign_domain.gd
+godot --path . --max-fps 60 --quit-after 6000 --script res://tests/campaign_flow.gd
 ```
 
 If Godot is not on PATH, substitute its executable path. On the development machine:
@@ -88,12 +102,15 @@ Default window 1440×900; minimum 1024×720. UI tests capture screenshots to `us
 
 `candidate_generator.gd` owns expansion; `dictionary_service.gd` owns fragments; `exposure_budget.gd` owns exact fixed-point risk; `intel_service.gd` owns paid discovery; `attack_engine.gd` owns the request snapshot and model clock; `game_session.gd` coordinates the mission independently of window visibility. `service_catalog.gd` reads names and time coefficients from `data/services/services.json`.
 
-One authored English mission; no network, external cracking process, saves or procedural targets. The local MP3 soundtrack, generated action effects and procedural backgrounds require no runtime services. The operator's self-portrait uses `assets/portraits/player-icon.png`, configured in `data/ui/operator.tres`. Real-user usability, subjective audio and standalone export still need human validation.
+Three authored English missions; no network, external cracking process, saves or procedural targets. The local MP3 soundtrack, generated action effects and procedural backgrounds require no runtime services. The operator's self-portrait uses `assets/portraits/player-icon.png`, configured in `data/ui/operator.tres`. Real-user usability, subjective audio and standalone export still need human validation.
 
 ## UI authoring
 
 - `scenes/boot.tscn` / `scenes/ui/start_screen.tscn`: silent credits, phased fade orchestration, held-key isolation and delayed control handoff.
-- `scenes/ui/intro_dialogue.tscn` / `data/dialogues/intro.tres`: editor-authored conversation, transparent portraits, skippable typewriting and Space acceleration.
+- `data/dialogues/intro.dialogue`: write/edit the briefing in Godot's **Dialogue** workspace, with syntax checking and custom-balloon preview. Dialogue Manager v4.1.0 owns branching/runtime. See [authoring guide](docs/dialogue-authoring.md).
+- `data/dialogues/intro.tres`, `characters/`, `presentation.tres`: resource-driven conversation entry, portraits/names/expressions, dimensions and typing settings. `data/dialogues/campaign.dialogue` contains before/after conversations and four final branches.
+- `data/campaign/main.tres`, `goals/`, `grading.tres`: ordered targets, mission file inputs, result copy, dialogue references and exact A/B/C/D grading.
+- `scenes/ui/intro_dialogue.tscn` / `assets/ui/dialogue_theme.tres`: capped portraits, curator connection window, two aligned retained-text windows, native plugin typewriting/choices and Space acceleration. AnimationPlayer clips own transitions.
 - `assets/ui/startup_theme.tres`: isolated dark terminal palette and typography; `startup_background.gd` draws its grid/registration marks. The desktop retains its own pastel theme.
 - `scenes/audio/music_manager.tscn` / `scripts/audio/music_manager.gd`: persistent two-player music and exported MusicCue inputs. `data/audio/` owns tracks/order/timing. `game_audio.gd` owns action tones only; `default_bus_layout.tres` routes Music/SFX independently.
 - `scenes/ui/atoms/`: button, icon, checkbox, input, window background, titlebar, statusbar, modal layer.

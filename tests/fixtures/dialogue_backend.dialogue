@@ -1,0 +1,22 @@
+# Integration fixture, not game narrative.
+~ start
+Curator: [#expression=neutral] Backend fixture.
+- Continue => selected
+- Locked [if false /] => forbidden
+
+~ selected
+Player: Selected branch.
+=> END
+
+~ long
+Curator: Long-text layout fixture. This paragraph deliberately exceeds the normal message length so the minimum-size text window must retain readable typography and provide scrolling. It repeats neutral testing copy rather than adding game narrative. The portrait and connection window must remain compact, both dialogue panels must stay aligned, and the taskbar must stay clear. A writer can edit this entire paragraph in the Dialogue editor without changing GDScript. Scrolling this paragraph must not confirm the dialogue or select a response. The same resource and balloon are reused for the introductory briefing, future mission conversations, and standalone editor previews. End of long-text layout fixture.
+=> END
+
+~ forbidden
+Curator: This branch must not be selected.
+=> END
+
+~ barrier
+$> Narrative.present("desktop_reveal")
+Curator: After the barrier.
+=> END

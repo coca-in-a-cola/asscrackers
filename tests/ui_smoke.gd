@@ -4,6 +4,7 @@ var failures: Array = []
 var count := 0
 
 func _initialize() -> void:
+	root.position = Vector2i.ZERO
 	call_deferred("run")
 	create_timer(45.0).timeout.connect(func(): printerr("UI FAIL: watchdog timeout"); quit(1))
 
@@ -40,13 +41,30 @@ func mouse_button(point: Vector2, pressed: bool) -> void:
 	event.global_position = point
 	event.button_index = MOUSE_BUTTON_LEFT
 	event.pressed = pressed
+	event.button_mask = MOUSE_BUTTON_MASK_LEFT if pressed else 0
 	root.push_input(event)
-	await process_frame
+	await settle()
 
 func click_control(control: Control) -> void:
 	var point := control.get_global_rect().get_center()
-	await mouse_button(point, true)
-	await mouse_button(point, false)
+	if DisplayServer.get_name() != "headless":
+		root.warp_mouse(point)
+		await settle()
+	var motion := InputEventMouseMotion.new()
+	motion.position = point
+	motion.global_position = point
+	root.push_input(motion)
+	await process_frame
+	# Deliver one complete click before OS hover polling can move mouse focus.
+	for pressed in [true, false]:
+		var event := InputEventMouseButton.new()
+		event.position = point
+		event.global_position = point
+		event.button_index = MOUSE_BUTTON_LEFT
+		event.pressed = pressed
+		event.button_mask = MOUSE_BUTTON_MASK_LEFT if pressed else 0
+		root.push_input(event)
+	await settle()
 
 func drag_title(window: Control, offset: Vector2) -> void:
 	var title := window.get_node("Stack/Titlebar") as Control
@@ -69,9 +87,20 @@ func source(scene: Control, id: String) -> void:
 	scene._activate_application(&"Dossier")
 	scene.dossier_scroll.ensure_control_visible(scene.dossier.nodes[id])
 	await settle()
+	var popup: Control = scene.get_node("IntelDetail")
+	var widths: Array[float] = []
+	var sample := func():
+		if popup.is_visible_in_tree() and popup.modulate.a > 0:
+			widths.append(popup.size.x)
+	var frame_signal: Signal = process_frame if DisplayServer.get_name() == "headless" else RenderingServer.frame_post_draw
+	frame_signal.connect(sample)
 	await click_control(scene.dossier.nodes[id])
 	await settle()
-	check(scene.selected_intel == id and scene.get_node("IntelDetail").visible, "Source opens anchored subwindow: " + id)
+	frame_signal.disconnect(sample)
+	check(scene.selected_intel == id and popup.visible and popup.modulate.a == 1, "Source opens anchored subwindow: " + id)
+	check(not widths.is_empty() and widths.all(func(width: float): return absf(width - popup.preferred_size.x) < 1), "Every visible source frame has final width: " + id)
+	var source_title: Label = popup.get_node("%InfoTitle")
+	check(not source_title.text.is_empty() and source_title.size.y >= source_title.get_theme_font_size("font_size"), "Source metadata retains readable height: " + id)
 
 func buy(scene: Control, id: String) -> void:
 	await source(scene, id)
@@ -181,6 +210,17 @@ func run() -> void:
 	manager.open_application(&"Dossier")
 	await source(scene, "habit")
 	check(popup.body.text.contains("replace lowercase a") and scene.session.budget.value == 45, "Reopening graph preserves bought information")
+	popup.hide()
+	scene._select_intel("nickname")
+	check(popup.visible and popup.modulate.a == 0, "First popup reflow is not drawn")
+	popup.hide()
+	await settle()
+	check(not popup.visible, "Closing during reflow prevents late popup reveal")
+	scene._select_intel("birth_year")
+	scene._select_intel("habit")
+	await settle()
+	await settle()
+	check(popup.fact_id == "habit" and popup.modulate.a == 1 and popup.size.x == popup.preferred_size.x, "Rapid selection reveals only latest source at fixed width")
 	root.size = Vector2i(1024, 720)
 	await settle()
 	check_layout(scene)

@@ -1,6 +1,31 @@
-[gd_scene load_steps=3 format=3]
+[gd_scene load_steps=4 format=3]
 [ext_resource type="PackedScene" path="res://scenes/ui/components/dialog.tscn" id="1"]
 [ext_resource type="Texture2D" path="res://assets/ui/windows95/icons/icons--icon-small-file--2-754.png" id="2"]
+[ext_resource type="Script" path="res://scripts/ui/components/result_panel.gd" id="3"]
 [node name="Result" instance=ExtResource("1")]
+script = ExtResource("3")
 title = "hashdog.exe — Job result"
 window_icon = ExtResource("2")
+closable = false
+[node name="ScoreRow" type="HBoxContainer" parent="Stack/ContentMargin/Content" index="1"]
+unique_name_in_owner = true
+layout_mode = 2
+theme_override_constants/separation = 32
+[node name="Mark" type="Label" parent="Stack/ContentMargin/Content/ScoreRow"]
+unique_name_in_owner = true
+layout_mode = 2
+size_flags_horizontal = 3
+theme_override_font_sizes/font_size = 42
+text = "MARK A"
+[node name="Exposure" type="Label" parent="Stack/ContentMargin/Content/ScoreRow"]
+unique_name_in_owner = true
+layout_mode = 2
+theme_type_variation = &"MetricsText"
+text = "FINAL EXPOSURE\n0.00 / 100"
+[node name="Primary" parent="Stack/ContentMargin/Content/Actions" index="0"]
+custom_minimum_size = Vector2(0, 64)
+size_flags_horizontal = 3
+theme_override_font_sizes/font_size = 24
+text = "SUBMIT RESULT"
+[node name="Secondary" parent="Stack/ContentMargin/Content/Actions" index="1"]
+visible = false

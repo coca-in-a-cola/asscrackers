@@ -11,7 +11,7 @@ const Loader = preload("res://scripts/domain/mission_loader.gd")
 const Generator = preload("res://scripts/domain/candidate_generator.gd")
 const Budget = preload("res://scripts/domain/exposure_budget.gd")
 const Intel = preload("res://scripts/domain/intel_service.gd")
-const MISSION_PATH := "res://data/targets/target_001.json"
+@export_file("*.json") var mission_path: String
 
 var dictionary = WordList.new()
 var budget = Budget.new()
@@ -33,7 +33,11 @@ func _process(delta: float) -> void:
 		advance(generation, delta)
 
 func restart() -> Dictionary:
+	return start_mission(mission_path)
+
+func start_mission(path: String) -> Dictionary:
 	generation += 1
+	mission_path = path
 	dictionary.clear()
 	budget = Budget.new()
 	engine = EngineModel.new(budget)
@@ -45,7 +49,7 @@ func restart() -> Dictionary:
 	_solution = {}
 	_target_hash = ""
 	candidates = []
-	var response := Loader.load_mission(MISSION_PATH)
+	var response := Loader.load_mission(mission_path)
 	if not response.ok:
 		return response
 	var mission: Dictionary = response.mission
@@ -146,3 +150,11 @@ func _check_events() -> void:
 
 func victory_details() -> Dictionary:
 	return _solution.duplicate(true) if engine.phase == "WON" else {}
+
+func result_snapshot() -> Dictionary:
+	return {"mission_id": public_mission.get("id", ""), "result": engine.result, "exposure_units": budget.units, "requests": engine.attempts_used, "jobs": engine.runs_used, "elapsed": engine.elapsed}
+
+func cancel_work() -> void:
+	generation += 1
+	automatic_clock = false
+	engine.stop()

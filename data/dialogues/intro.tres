@@ -1,38 +1,16 @@
-[gd_resource type="Resource" script_class="DialogueSequence" load_steps=4 format=3]
-[ext_resource type="Script" path="res://scripts/ui/data/dialogue_sequence.gd" id="1"]
-[ext_resource type="Texture2D" path="res://assets/portraits/player.png" id="2"]
-[ext_resource type="Texture2D" path="res://assets/portraits/curator.png" id="3"]
+[gd_resource type="Resource" script_class="DialogueEntry" load_steps=7 format=3]
+[ext_resource type="Script" path="res://scripts/ui/data/dialogue_entry.gd" id="1"]
+[ext_resource type="DialogueResource" path="res://data/dialogues/intro.dialogue" id="2"]
+[ext_resource type="Resource" path="res://data/dialogues/characters/player.tres" id="3"]
+[ext_resource type="Resource" path="res://data/dialogues/characters/curator.tres" id="4"]
+[ext_resource type="Resource" path="res://data/dialogues/presentation.tres" id="5"]
+[ext_resource type="Script" path="res://scripts/ui/data/dialogue_character.gd" id="6"]
 [resource]
 script = ExtResource("1")
-player_portrait = ExtResource("2")
-curator_portrait = ExtResource("3")
-player_name = "YOU / TRAINEE"
-curator_name = "CURATOR / ID REDACTED"
-desktop_reveal_after = 4
-lines = Array[Dictionary]([{
-"speaker": "curator", "text": "Wake the fuck up, samurai. We have asses to crack"
-}, {
-"speaker": "player", "text": "Is that the official onboarding?"
-}, {
-"speaker": "curator", "text": "No. The official one costs extra."
-}, {
-"speaker": "player", "text": "Great. What am I breaking?"
-}, {
-"speaker": "curator", "text": "ANUS INDUSTRIES. HR portal. Lexa's account. We need the layoff order."
-}, {
-"speaker": "player", "text": "A corporate account? This is my first job."
-}, {
-"speaker": "curator", "text": "The target is a fucking amateur. This is intern work. Try not to turn it into a funeral."
-}, {
-"speaker": "player", "text": "Where do I start?"
-}, {
-"speaker": "curator", "text": "Open G-D's Eye. Learn his habits. Build a small dictionary. Then send it."
-}, {
-"speaker": "player", "text": "Why small?"
-}, {
-"speaker": "curator", "text": "Every query and every login leaves a footprint. At 100 Exposure, the lesson ends."
-}, {
-"speaker": "player", "text": "And you are...?"
-}, {
-"speaker": "curator", "text": "The voice you don't mention in your report. Open your tools."
-}])
+id = &"intro"
+dialogue = ExtResource("2")
+characters = Array[ExtResource("6")]([ExtResource("3"), ExtResource("4")])
+presentation = ExtResource("5")
+entry_music = &"intro"
+exit_music = &"background"
+presentation_cues = Dictionary[String, StringName]({"desktop_reveal": &"desktop_reveal"})

@@ -1,0 +1,16 @@
+[remap]
+
+importer="dialogue_manager"
+importer_version=18
+type="Resource"
+uid="uid://bg70upunnpudq"
+path="res://.godot/imported/campaign.dialogue-66a2e789c126f6e0de26f3da752b8c51.tres"
+
+[deps]
+
+source_file="res://data/dialogues/campaign.dialogue"
+dest_files=["res://.godot/imported/campaign.dialogue-66a2e789c126f6e0de26f3da752b8c51.tres"]
+
+[params]
+
+defaults=true

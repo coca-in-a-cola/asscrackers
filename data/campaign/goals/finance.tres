@@ -1,0 +1,12 @@
+[gd_resource type="Resource" script_class="CampaignGoal" load_steps=4 format=3]
+[ext_resource type="Script" path="res://scripts/domain/data/campaign_goal.gd" id="1"]
+[ext_resource type="Resource" path="res://data/dialogues/before_finance.tres" id="2"]
+[ext_resource type="Resource" path="res://data/dialogues/after_finance.tres" id="3"]
+[resource]
+script = ExtResource("1")
+id = &"target_002"
+title = "02 / FINANCE"
+mission_file = "res://data/targets/target_002.json"
+success_text = "Corrected payment register retrieved.\nThe overtime column now contains amounts instead of motivational quotes."
+before_dialogue = ExtResource("2")
+after_dialogue = ExtResource("3")

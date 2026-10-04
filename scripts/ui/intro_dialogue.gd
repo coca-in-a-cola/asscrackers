@@ -1,68 +1,154 @@
 extends CanvasLayer
+## Custom Dialogue Manager balloon: two speakers, two retained text windows.
 
 signal started
-signal desktop_requested
-signal finished
-
-@export var sequence: DialogueSequence
-@export_range(10.0, 100.0) var characters_per_second := 38.0
-
-const Playback = preload("res://scripts/ui/dialogue_playback.gd")
-var playback = Playback.new()
+signal _transition_finished
+@export var default_entry: DialogueEntry
+@onready var animation_player: AnimationPlayer = %AnimationPlayer
+@onready var portrait_animation_player: AnimationPlayer = %PortraitAnimationPlayer
+var director: DialogueDirector
+var entry: DialogueEntry
 var active := false
 var held_keys: Dictionary = {}
 var _blocked_entry_key := 0
-var _line_active := false
 var _fast_held := false
 var _held_seconds := 0.0
 var _auto_seconds := 0.0
-var _reveal: Tween
-var _speaker_fade: Tween
+var _label: DialogueLabel
+var _panels: Array[PanelContainer] = []
+var _portraits: Array[TextureRect] = []
+var _generation := 0
+var _revealed_slots: Dictionary = {}
 
 func _ready() -> void:
-	playback.line_changed.connect(_show_line)
-	playback.desktop_requested.connect(func(): desktop_requested.emit())
-	playback.finished.connect(_on_finished)
+	_panels = [%PlayerText, %CuratorText]
+	_portraits = [%PlayerPortrait, %CuratorPortrait]
 	get_window().focus_exited.connect(_release_input)
+	get_viewport().size_changed.connect(_layout)
+	%Responses.response_selected.connect(_select_response)
+	animation_player.animation_finished.connect(func(_animation: StringName): _transition_finished.emit())
+	visible = false
 
-func begin(entry_keycode: int = 0) -> void:
-	if sequence == null or not sequence.valid():
-		push_error("Invalid introductory dialogue resource.")
-		finished.emit()
+func configure(data: DialogueEntry) -> void:
+	entry = data
+	%View.theme = entry.presentation.theme
+	_label = null
+	portrait_animation_player.stop()
+	_revealed_slots.clear()
+	%ChoiceScroll.hide()
+	for panel in _panels:
+		panel.get_node("%Body").text = ""
+		panel.modulate.a = 0.0
+	for portrait in _portraits:
+		portrait.modulate.a = 0.0
+	for character in entry.characters:
+		_portraits[character.slot].texture = character.portrait()
+		_portraits[character.slot].modulate.a = 0.0 if character.reveal_on_first_line else 1.0
+		_panels[character.slot].modulate.a = _portraits[character.slot].modulate.a
+		if not character.reveal_on_first_line:
+			_revealed_slots[character.slot] = true
+		_panels[character.slot].get_node("%Name").text = "> " + character.display_name
+	_layout()
+
+func _layout() -> void:
+	if entry == null or not is_node_ready():
 		return
+	var settings := entry.presentation
+	var viewport := get_viewport().get_visible_rect().size
+	var width := minf(viewport.x * settings.width_fraction, settings.maximum_width)
+	var portrait_height := minf(viewport.y * settings.portrait_height_fraction, settings.maximum_portrait_height)
+	var height := portrait_height + settings.panel_height + settings.row_gap + 36.0
+	%View.position = Vector2((viewport.x - width) / 2.0, viewport.y - settings.bottom_clearance - height)
+	%View.size = Vector2(width, height)
+	%Actors.custom_minimum_size.y = portrait_height
+	%ConnectionWindow.offset_top = -portrait_height * settings.connection_rise_fraction
+	%CuratorPortrait.offset_top = -portrait_height
+	%Panels.custom_minimum_size.y = settings.panel_height
+	for panel in _panels:
+		panel.custom_minimum_size.x = (width - settings.column_gap) / 2.0
+	%Actors.add_theme_constant_override("separation", settings.column_gap)
+	%Panels.add_theme_constant_override("separation", settings.column_gap)
+	%Stack.add_theme_constant_override("separation", settings.row_gap)
+	await get_tree().process_frame
+	if is_inside_tree():
+		_place_choices()
+
+func _place_choices() -> void:
+	var body: Control = %PlayerText.get_node("%Body")
+	%ChoiceScroll.position = body.global_position - %View.global_position
+	%ChoiceScroll.size = body.size
+
+func open(entry_keycode: int = 0) -> void:
+	_generation += 1
+	_release_input()
 	active = true
 	visible = true
 	_blocked_entry_key = entry_keycode
 	if entry_keycode != 0:
 		held_keys[entry_keycode] = true
-	%View.modulate.a = 1.0
-	%StageDimmer.modulate.a = 0.0
-	%PlayerPortrait.texture = sequence.player_portrait
-	%CuratorPortrait.texture = sequence.curator_portrait
-	%PlayerName.text = sequence.player_name
-	%CuratorName.text = sequence.curator_name
-	%PlayerPortrait.modulate.a = 0.0
-	%CuratorPortrait.modulate.a = 0.0
-	%DialoguePanel.modulate.a = 0.0
-	await _fade(%PlayerPortrait, 1.0, 0.3)
-	var pause := create_tween()
-	pause.tween_interval(0.1)
-	await pause.finished
-	await _fade(%CuratorPortrait, 1.0, 0.3)
-	await _fade(%DialoguePanel, 1.0, 0.18)
-	_line_active = true
-	playback.start(sequence)
-	started.emit()
+	animation_player.play(entry.presentation.enter_animation)
+	await _transition_finished
 
-func _fade(item: CanvasItem, opacity: float, seconds: float) -> void:
-	var tween := create_tween()
-	tween.tween_property(item, "modulate:a", opacity, seconds).set_trans(Tween.TRANS_SINE).set_ease(Tween.EASE_IN_OUT)
-	await tween.finished
+func present_line(line: DialogueLine, character: DialogueCharacter) -> void:
+	_generation += 1
+	var generation := _generation
+	%ChoiceScroll.hide()
+	_portraits[character.slot].texture = character.portrait(line.get_tag_value("expression"))
+	_reveal_character(character)
+	for index in _panels.size():
+		_panels[index].get_node("%Titlebar").theme_type_variation = &"DialogueTitleActive" if index == character.slot else &"DialogueTitle"
+	_label = _panels[character.slot].get_node("%Body")
+	_label.seconds_per_step = 1.0 / entry.presentation.characters_per_second
+	_label.seconds_per_pause_step = entry.presentation.punctuation_pause
+	_label.dialogue_line = line
+	_label.type_out()
+	started.emit()
+	await _label.finished_typing
+	if generation != _generation or not active:
+		return
+	if not line.responses.is_empty():
+		# The response window must accompany its portrait when choices are offered.
+		for respondent in entry.characters:
+			if respondent.slot == DialogueCharacter.Slot.LEFT:
+				_reveal_character(respondent)
+		%Responses.responses = line.responses
+		_place_choices()
+		%ChoiceScroll.show()
+		var items: Array = %Responses.get_menu_items()
+		if not items.is_empty():
+			items[0].grab_focus()
+	elif not line.time.is_empty():
+		var delay := line.text.length() / entry.presentation.characters_per_second if line.time == "auto" else line.time.to_float()
+		await get_tree().create_timer(delay).timeout
+		if generation == _generation and active:
+			director.advance()
+
+func _reveal_character(character: DialogueCharacter) -> void:
+	if not _revealed_slots.has(character.slot):
+		_revealed_slots[character.slot] = true
+		portrait_animation_player.play(character.first_line_animation)
+
+func is_typing() -> bool:
+	return _label != null and _label.is_typing
+
+func complete_typing() -> void:
+	if _label != null:
+		_label.skip_typing()
+
+func advance() -> void:
+	_auto_seconds = 0.0
+	if director != null:
+		director.advance()
+
+func _select_response(response: DialogueResponse) -> void:
+	if response.is_allowed and director != null:
+		director.advance(response.next_id)
 
 func _input(event: InputEvent) -> void:
 	if not active:
 		return
-	get_viewport().set_input_as_handled()
+	if event is InputEventMouseButton and event.button_index in [MOUSE_BUTTON_WHEEL_UP, MOUSE_BUTTON_WHEEL_DOWN]:
+		return
 	if event is InputEventKey:
 		var code: int = event.physical_keycode if event.physical_keycode != 0 else event.keycode
 		if event.pressed:
@@ -74,10 +160,13 @@ func _input(event: InputEvent) -> void:
 				_blocked_entry_key = 0
 			return
 	if event.is_action_released(&"dialogue_fast_forward"):
-		_fast_held = false
-		_held_seconds = 0.0
-		if _reveal != null and _reveal.is_valid():
-			_reveal.set_speed_scale(1.0)
+		_release_fast_forward()
+	# Let the plugin response menu own selection and focus; never auto-pick.
+	if %ChoiceScroll.visible:
+		if event is InputEventKey and event.echo:
+			get_viewport().set_input_as_handled()
+		return
+	get_viewport().set_input_as_handled()
 	if event.is_action_pressed(&"dialogue_fast_forward"):
 		_fast_held = true
 		_held_seconds = 0.0
@@ -91,75 +180,74 @@ func _input(event: InputEvent) -> void:
 	if confirmed:
 		advance()
 
+func _unhandled_input(_event: InputEvent) -> void:
+	if active:
+		get_viewport().set_input_as_handled()
+
 func _process(delta: float) -> void:
-	if not active or not _fast_held:
+	if not active or not _fast_held or director == null:
 		return
 	_held_seconds += delta
-	if _held_seconds < 0.3 or not _line_active or playback.waiting_for_desktop or playback.complete:
+	if _held_seconds < entry.presentation.fast_hold_delay or director.busy or %ChoiceScroll.visible:
 		return
-	if _reveal != null and _reveal.is_running():
-		_reveal.set_speed_scale(8.0)
-	else:
+	if _label != null:
+		_label.seconds_per_step = 1.0 / (entry.presentation.characters_per_second * entry.presentation.fast_multiplier)
+		_label.seconds_per_pause_step = entry.presentation.punctuation_pause / entry.presentation.fast_multiplier
+	if not is_typing():
 		_auto_seconds += delta
-		if _auto_seconds >= 0.12:
-			_auto_seconds = 0.0
-			playback.advance()
-
-func advance() -> void:
-	if not _line_active or playback.waiting_for_desktop or playback.complete:
-		return
-	_auto_seconds = 0.0
-	if _reveal != null and _reveal.is_running():
-		_reveal.kill()
-		%Body.visible_ratio = 1.0
-	else:
-		playback.advance()
-
-func _show_line(line: Dictionary, index: int) -> void:
-	if _reveal != null and _reveal.is_valid():
-		_reveal.kill()
-	var player_speaking: bool = line.speaker == "player"
-	%Speaker.text = sequence.player_name if player_speaking else sequence.curator_name
-	%Speaker.theme_type_variation = &"BootAccent" if player_speaking else &"BootMusic"
-	%Progress.text = "%02d / %02d" % [index + 1, sequence.lines.size()]
-	%Body.text = line.text
-	%Body.visible_ratio = 0.0
-	_reveal = create_tween()
-	_reveal.tween_property(%Body, "visible_ratio", 1.0, line.text.length() / characters_per_second)
-	if _fast_held and _held_seconds >= 0.3:
-		_reveal.set_speed_scale(8.0)
-	if _speaker_fade != null and _speaker_fade.is_valid():
-		_speaker_fade.kill()
-	_speaker_fade = create_tween().set_parallel(true)
-	var subdued := Color(0.62, 0.62, 0.62, 1.0)
-	_speaker_fade.tween_property(%PlayerPortrait, "modulate", Color.WHITE if player_speaking else subdued, 0.16)
-	_speaker_fade.tween_property(%CuratorPortrait, "modulate", subdued if player_speaking else Color.WHITE, 0.16)
-
-func reveal_backdrop() -> void:
-	_fade(%StageDimmer, 1.0, 1.0)
-
-func resume_after_desktop() -> void:
-	playback.resume_after_desktop()
-
-func _on_finished() -> void:
-	_line_active = false
-	finished.emit()
+		if _auto_seconds >= entry.presentation.fast_advance_interval:
+			advance()
 
 func fade_out() -> void:
-	if _reveal != null and _reveal.is_valid():
-		_reveal.kill()
-	var tween := create_tween().set_parallel(true)
-	tween.tween_property(%View, "modulate:a", 0.0, 0.25).set_trans(Tween.TRANS_SINE)
-	tween.tween_property(%StageDimmer, "modulate:a", 0.0, 0.25).set_trans(Tween.TRANS_SINE)
-	await tween.finished
+	_generation += 1
+	portrait_animation_player.stop()
+	animation_player.play(entry.presentation.exit_animation)
+	await _transition_finished
 	active = false
 	visible = false
+	_release_fast_forward()
+
+func close_immediately() -> void:
+	_generation += 1
+	animation_player.stop()
+	portrait_animation_player.stop()
+	_transition_finished.emit()
+	for panel in _panels:
+		panel.get_node("%Body").is_typing = false
+	active = false
+	visible = false
+	_release_input()
+
+func _release_fast_forward() -> void:
 	_fast_held = false
+	_held_seconds = 0.0
+	_auto_seconds = 0.0
+	if _label != null and entry != null:
+		_label.seconds_per_step = 1.0 / entry.presentation.characters_per_second
+		_label.seconds_per_pause_step = entry.presentation.punctuation_pause
 
 func _release_input() -> void:
 	held_keys.clear()
 	_blocked_entry_key = 0
-	_fast_held = false
-	_held_seconds = 0.0
-	if _reveal != null and _reveal.is_valid():
-		_reveal.set_speed_scale(1.0)
+	_release_fast_forward()
+
+## Standard plugin balloon API, also used by the Dialogue editor preview.
+func start(resource: DialogueResource, cue: String = "", extra_game_states: Array = []) -> void:
+	var data := default_entry.duplicate() as DialogueEntry
+	data.dialogue = resource
+	if not cue.is_empty():
+		data.start_cue = cue
+	var preview_director := DialogueDirector.new()
+	preview_director.stage = self
+	add_child(preview_director)
+	var context := DialogueStateContext.new()
+	context.alias = "Narrative"
+	context.target = preview_director
+	preview_director.add_child(context)
+	preview_director.finished.connect(func(_data: DialogueEntry, cancelled: bool):
+		if not cancelled:
+			await fade_out()
+		queue_free()
+	)
+	await get_tree().process_frame
+	preview_director.start_entry(data, 0, extra_game_states)

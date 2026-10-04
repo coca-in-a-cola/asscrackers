@@ -11,8 +11,10 @@ title = "G-D's Eye / source"
 [node name="InfoTitle" type="Label" parent="Stack/ContentMargin/Content"]
 unique_name_in_owner = true
 layout_mode = 2
+custom_minimum_size = Vector2(0, 18)
 theme_type_variation = &"SmallText"
 autowrap_mode = 3
+clip_text = true
 [node name="InfoBody" type="RichTextLabel" parent="Stack/ContentMargin/Content"]
 unique_name_in_owner = true
 layout_mode = 2
@@ -30,3 +32,4 @@ layout_mode = 2
 custom_minimum_size = Vector2(0, 30)
 theme_type_variation = &"SmallText"
 autowrap_mode = 3
+clip_text = true

@@ -154,7 +154,7 @@ func _test_engine() -> void:
 	check(model.queue.size() == 4, "Independent deep attack snapshot")
 
 func _test_loader() -> void:
-	var loaded := Loader.load_mission(Session.MISSION_PATH)
+	var loaded := Loader.load_mission("res://data/targets/target_001.json")
 	check(loaded.ok, "Mission loads")
 	check(not Loader.load_mission("res://missing.json").ok, "Missing mission diagnostic")
 	check(not Loader.load_mission("res://project.godot").ok, "Invalid JSON diagnostic")
@@ -178,6 +178,7 @@ func _test_loader() -> void:
 
 func _test_session() -> void:
 	var session := Session.new()
+	session.mission_path = "res://data/targets/target_001.json"
 	session.automatic_clock = false
 	root.add_child(session)
 	check(session.restart().ok and session.candidates.is_empty(), "Clean session")

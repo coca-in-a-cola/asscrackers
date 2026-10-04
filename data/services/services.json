@@ -3,6 +3,10 @@
     "display_name": "ANUS INDUSTRIES / Human Resources",
     "time_coefficient": 1.0
   },
+  "anus_finance": {
+    "display_name": "ANUS INDUSTRIES / Finance",
+    "time_coefficient": 1.5
+  },
   "anus_vault": {
     "display_name": "ANUS INDUSTRIES / Executive Vault",
     "time_coefficient": 2.0

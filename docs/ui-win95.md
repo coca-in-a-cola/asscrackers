@@ -2,7 +2,7 @@
 
 ## Layout
 
-`boot.tscn` starts with silent credits. Its accepted input starts Sycophant, prepares the desktop behind a black curtain, reveals portraits and runs the manual briefing. The desktop appears behind the dialogue; all applications remain closed when control is handed over. MusicManager is an independent scene Autoload with idle players before entry. Restart operates inside the existing desktop. See [intro and audio](startup-audio.md).
+`boot.tscn` starts with silent credits. Its accepted input starts Sycophant, prepares the desktop behind a black curtain, reveals portraits and runs the manual briefing. Dialogue Manager v4.1.0 supplies the scenario/runtime; a scoped director and custom two-column balloon supply presentation. Portraits are capped, the curator occupies a connection window, and each speaker retains a separate text window. The desktop appears at an authored scenario command; all applications remain closed at handoff. MusicManager is an independent scene Autoload with idle players before entry. Resource-ordered target transitions reuse the desktop; success waits for SUBMIT RESULT, while Game Over/summary return to the silent title. See [campaign](campaign.md), [intro and audio](startup-audio.md) and [dialogue authoring](dialogue-authoring.md).
 
 ```text
 main.tscn

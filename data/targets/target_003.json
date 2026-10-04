@@ -1,0 +1,21 @@
+{
+  "schema_version": 3,
+  "id": "target_003",
+  "display_name": "OLEG / ARCHIVE",
+  "login": "oleg@anus.industries",
+  "service_id": "anus_vault",
+  "brief": "Retrieve the signed archive copy from the Executive Vault. Oleg maintains the document archive. His personal account habits may be easier to recover than the documents he files.",
+  "facts": [
+    {"id": "directory", "label": "Archive directory", "value": "Oleg / records custodian", "source": "STAFF / archive directory", "note": "His directory entry links a motoring forum and an obsolete access example. 'Nothing is lost. It is merely filed where nobody can find it.'", "cost": 5, "requires": [], "position": [245, 30]},
+    {"id": "vehicle", "label": "Vehicle record", "value": "1984 Volga", "source": "REGISTRY / vehicle record", "note": "His favourite car was built in 1984. He says he uses its make and full production year for memorable account strings.", "cost": 8, "requires": [], "position": [245, 280]},
+    {"id": "forum", "label": "Motoring forum", "value": "Volga / capital V", "source": "FORUM / linked profile", "note": "'For the archive: make first, year next, then a #. It looks like a filing tag.' His signature links a message about the current car.", "cost": 8, "requires": ["directory"], "position": [455, 150]},
+    {"id": "sample", "label": "Obsolete access", "value": "Volga1978# / obsolete", "source": "SUPPORT / retired access note", "note": "The old year is wrong, but the name's capitalization and # suffix match the forum description.", "cost": 9, "requires": ["directory"], "position": [455, 30]},
+    {"id": "habit", "label": "Current-car note", "value": "Use the 1984 car, not the 1978 one", "source": "FORUM / archive custodian", "note": "Cross-reference confirms the current year and unchanged filing-tag suffix. 'Security is a system of labels. Mine has one label.'", "cost": 8, "requires": ["forum", "sample"], "position": [675, 85]},
+    {"id": "hobby", "label": "Fishing club", "value": "Weekend club / Quiet Water", "source": "SOCIAL / fishing club", "note": "A hobby, not an account hint. Even his fish prefer not to be documented.", "cost": 6, "requires": ["directory"], "position": [455, 280]}
+  ],
+  "solution": {
+    "password": "Volga1984#",
+    "fact_ids": ["vehicle", "forum", "sample", "habit"],
+    "explanation": "Oleg uses Volga with a capital V, followed by the current car's production year 1984, then #. The forum describes the order and suffix; the registry provides the year. Combine Volga and 1984 with the # suffix rule, or include # as a fragment."
+  }
+}

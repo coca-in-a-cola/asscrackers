@@ -1,0 +1,21 @@
+{
+  "schema_version": 3,
+  "id": "target_002",
+  "display_name": "MIRA / PAYROLL",
+  "login": "mira@anus.industries",
+  "service_id": "anus_finance",
+  "brief": "Retrieve the corrected payment register from Finance. Mira manages payroll corrections. Investigate memorable names and numbers, then recover access with a small candidate pool.",
+  "facts": [
+    {"id": "profile", "label": "Staff profile", "value": "Mira / payroll administrator", "source": "STAFF / public directory", "note": "Her profile links a pet album and an old account-recovery example. 'I make sure your disappointment arrives on payday.'", "cost": 4, "requires": [], "position": [245, 30]},
+    {"id": "education", "label": "Graduation record", "value": "Graduated in 2002", "source": "ALUMNI / public record", "note": "She calls 2002 her lucky number and says she still uses the full year for personal accounts.", "cost": 7, "requires": [], "position": [245, 280]},
+    {"id": "pet", "label": "Pet album", "value": "Luna, her current cat", "source": "SOCIAL / linked album", "note": "'The payroll portal is named after Luna. Name first, lucky year next. Capital L; she is management.'", "cost": 6, "requires": ["profile"], "position": [455, 150]},
+    {"id": "sample", "label": "Recovery example", "value": "Luna1999! / obsolete", "source": "SUPPORT / old recovery form", "note": "The form uses an old year, but shows the capitalized name, full year and exclamation-mark suffix. It links a follow-up support message.", "cost": 8, "requires": ["profile"], "position": [455, 30]},
+    {"id": "habit", "label": "Support follow-up", "value": "Same name, lucky year, one !", "source": "CHAT / payroll support", "note": "She confirms that the obsolete year was replaced by her graduation year. 'The exclamation mark is the only enthusiasm left in this department.'", "cost": 7, "requires": ["pet", "sample"], "position": [675, 85]},
+    {"id": "hobby", "label": "Office raffle", "value": "Ticket 404", "source": "STAFF / office raffle", "note": "A joke about missing bonuses. No evidence that this number is used in her accounts.", "cost": 5, "requires": ["profile"], "position": [455, 280]}
+  ],
+  "solution": {
+    "password": "Luna2002!",
+    "fact_ids": ["pet", "education", "sample", "habit"],
+    "explanation": "Mira uses her current cat Luna, capital L, followed by the full graduation year 2002. The recovery example and support message establish the ! suffix. Combine Luna and 2002 with the suffix rule, or include ! as a fragment."
+  }
+}

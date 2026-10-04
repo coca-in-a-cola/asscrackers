@@ -16,8 +16,20 @@
 - Verify real MP3 import/order, Music/SFX routing, automatic playlist wrap/crossfade, pausing both overlap players, mute/zero level, taskbar pause/resume and uninterrupted playback across mission restart.
 - Verify full darkness, portrait order, exact reference line, four-line reveal barrier, manual/held-Space progression, tool/risk lockout, handoff key quarantine and initially closed windows.
 - Verify editor-authored intro/background cues, Sycophant repetition, cue-entry crossfade and singleton survival after scene destruction. Graphical test watchdogs bound runtime script failures.
+- Verify Dialogue Manager imports/preview, editable character/presentation resources, equal text windows, capped portraits and a script-authored reveal command instead of a line-count barrier.
+- Verify a successful mission starts an assigned test conversation, native conditional responses, no auto-selection under held Space, immutable compiled resources, long-text scrolling and cancellation during entry/reveal.
 
 Results: [verification](verification.md).
+
+## Campaign acceptance
+
+- Three validated, resource-ordered goals with independent recon graphs and deducible passwords.
+- SUCCESS waits for the large SUBMIT RESULT action; frozen snapshots and duplicate submission guards.
+- Exact inclusive grade boundaries, fractional mean comparisons, no letter averaging.
+- Every before/after cue in order; four distinct final curator branches and a three-row summary.
+- New-target data reset, old-clock invalidation, persistent clamped window positions/audio/FX.
+- TRACE on every target returns to the silent first screen, resets the whole campaign and repeats onboarding on a new game.
+- Native success and summary screenshots at minimum/default/full-HD resolution. Campaign test watchdogs bound script failures.
 
 ## Human playtest
 

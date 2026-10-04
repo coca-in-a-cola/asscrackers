@@ -6,9 +6,9 @@ Product: [PRD](../PRD.MD). Technical rationale: [hashcat model](hashcat-model.md
 
 F5 opens `boot.tscn`, displaying only the silent start screen. Its ordered credits name mice-seller, GPT6.1 Sol, Google Image Pro and Karl Casey @ White Bat audio. A non-echo key press, mouse click, touch press or gamepad button creates the desktop and starts the MP3 soundtrack in the same input callback. Mouse motion, wheel, release and key echo do not enter. The entry key's repeats/release are consumed before normal desktop typing resumes.
 
-The credit screen fades to black, player then curator appear, and thirteen manually advanced lines introduce the trainee assignment. The first line is exactly `Wake the fuck up, samurai. We have asses to crack`. After four lines the desktop appears behind the conversation over 1 s. Any fresh button completes/advances a line; holding Space accelerates typing and progression. Tools and idle voices are blocked until the 0.25 s final handoff. Applications start closed with no active window.
+The credit screen fades to black, the curator appears first, and thirteen manually advanced lines introduce the trainee assignment. The player's portrait fades in with their first reply. The first line is exactly `Wake the fuck up, samurai. We have asses to crack`. After four lines the desktop appears behind the conversation over 1 s. Any fresh button completes/advances a line; holding Space accelerates typing and progression. Tools and idle voices are blocked until the 0.25 s final handoff. Applications start closed with no active window.
 
-Scene Autoload MusicManager receives editor-authored MusicCue resources. Sycophant repeats throughout the intro, then crossfades for 1.5 s into Hackers → New Beginnings → The Saga → repeat. Per-track overlap is 0.75 s. Music pauses both players/tween; Mute/volume update music and scene-local effects. Restart preserves playback/preferences and does not repeat the intro. Details: [startup and audio](startup-audio.md).
+Scene Autoload MusicManager receives editor-authored MusicCue resources. Sycophant repeats throughout the intro, then crossfades for 1.5 s into Hackers → New Beginnings → The Saga → repeat. Per-track overlap is 0.75 s. Music pauses both players/tween; Mute/volume update music and scene-local effects. Target transitions preserve playback/preferences. Return to title stops playback; a new campaign repeats the intro. Details: [startup and audio](startup-audio.md).
 
 ## Input and slots
 
@@ -87,9 +87,11 @@ Applications have fixed dimensions, X, titlebar dragging and persistent state/po
 
 ## Results and reset
 
-SUCCESS shows password, reasoning, actual fragments/rule, sent requests, jobs and Exposure. TRACE shows operation detection without revealing the password. Exhaustion is feedback, not defeat.
+SUCCESS shows password, goal-specific result text, reasoning, actual fragments/rule, sent requests, jobs, final Exposure and a large MARK. It waits for SUBMIT RESULT, which records the frozen snapshot exactly once and starts the after-goal dialogue. Exhaustion is feedback, not defeat.
 
-Restart invalidates old work generations, clears fragments/candidates, resets bought information and Exposure, and turns rules off. Audio/FX preferences and application positions persist. The first mission uses schema 3 and the named ANUS HR service at coefficient 1.
+The ordered campaign contains HR, Finance and Executive Vault at coefficients 1, 1.5 and 2. New targets invalidate old work generations, clear fragments/candidates, bought information, risk and rule mode; close applications while retaining positions/preferences. Every target has before/after curator dialogue. After the third submit, one curator line branches on final mark and a summary displays all targets. TRACE shows GAME OVER and RETURN TO TITLE, clears campaign progress and returns to the silent initial screen. No player-facing per-target retry remains.
+
+Marks: ≤25 A, ≤50 B, ≤75 C, >75 and <100 D. 100 is TRACE. Final mark uses mean exact Exposure across submitted targets with the same thresholds, never mean letters or rounded display values. Data lives in `data/campaign/`; see [campaign](campaign.md).
 
 ## Code ownership
 
@@ -100,9 +102,11 @@ Restart invalidates old work generations, clears fragments/candidates, resets bo
 - `service_catalog.gd`: named service/time coefficient resolution.
 - `attack_engine.gd`: request snapshot, model clock, stop/match/trace.
 - `game_session.gd`: mission lifecycle, runtime clock, readiness guards and events.
+- `CampaignState` / `CampaignDefinition` / `CampaignGoal` / `GradingPolicy`: submitted snapshots, ordered resource-driven progression and exact per-target/mean-risk marks.
 - `main.gd`: presentation projections and requests, no domain state ownership.
 - `boot.gd` / `start_screen.gd`: entry lifecycle, credits and accepted-input isolation.
-- `dialogue_playback.gd` / `intro_dialogue.gd`: conversation cursor, reveal barrier, portrait/text projection and acceleration.
+- Dialogue Manager v4.1.0: imported `.dialogue` scenarios, parsing, traversal, conditions and mutations.
+- `dialogue_director.gd` / `intro_dialogue.gd`: one-session lifecycle, awaited cinematic cues, resource-driven two-column balloon and native plugin labels/choices.
 - `music_manager.gd` / `MusicCue`: persistent music state with serialized editor inputs.
 - `game_audio.gd`: scene-local action tones, following singleton volume/mute preferences.
 

@@ -1,4 +1,4 @@
-[gd_scene load_steps=24 format=3]
+[gd_scene load_steps=26 format=3]
 [ext_resource type="Script" path="res://scripts/ui/main.gd" id="1"]
 [ext_resource type="Theme" path="res://assets/ui/windows95/game_theme.tres" id="2"]
 [ext_resource type="Script" path="res://scripts/ui/desktop_background.gd" id="3"]
@@ -22,6 +22,8 @@
 [ext_resource type="Texture2D" path="res://assets/ui/windows95/icons/icons--icon-big-help--2-764.png" id="21"]
 [ext_resource type="PackedScene" path="res://scenes/ui/components/retro_effects.tscn" id="22"]
 [ext_resource type="PackedScene" path="res://scenes/ui/components/intel_detail.tscn" id="23"]
+[ext_resource type="Resource" path="res://data/campaign/goals/hr.tres" id="24"]
+[ext_resource type="Resource" path="res://data/campaign/grading.tres" id="25"]
 [node name="AssCrackers" type="Control"]
 layout_mode = 3
 anchors_preset = 15
@@ -33,6 +35,8 @@ theme = ExtResource("2")
 texture_filter = 1
 script = ExtResource("1")
 copy = ExtResource("13")
+goal = ExtResource("24")
+grading = ExtResource("25")
 
 [node name="Session" type="Node" parent="."]
 unique_name_in_owner = true
@@ -194,7 +198,7 @@ unique_name_in_owner = true
 [connection signal="music_changed" from="Taskbar" to="." method="_set_music"]
 [connection signal="mute_changed" from="Taskbar" to="." method="_set_muted"]
 [connection signal="volume_changed" from="Taskbar" to="." method="_set_volume"]
-[connection signal="primary_requested" from="DialogLayer/ResultOverlay/Center/Result" to="." method="_restart"]
+[connection signal="primary_requested" from="DialogLayer/ResultOverlay/Center/Result" to="." method="_result_primary"]
 [connection signal="secondary_requested" from="DialogLayer/ResultOverlay/Center/Result" to="." method="_hide_result"]
 [connection signal="close_requested" from="DialogLayer/ResultOverlay/Center/Result" to="." method="_hide_result"]
 [connection signal="primary_requested" from="DialogLayer/HelpOverlay/Center/Help" to="." method="_hide_help"]

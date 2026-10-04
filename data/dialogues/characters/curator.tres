@@ -1,0 +1,9 @@
+[gd_resource type="Resource" script_class="DialogueCharacter" load_steps=3 format=3]
+[ext_resource type="Script" path="res://scripts/ui/data/dialogue_character.gd" id="1"]
+[ext_resource type="Texture2D" path="res://assets/portraits/curator.png" id="2"]
+[resource]
+script = ExtResource("1")
+id = &"Curator"
+display_name = "CURATOR / ID REDACTED"
+slot = 1
+expressions = Dictionary[String, Texture2D]({"neutral": ExtResource("2")})

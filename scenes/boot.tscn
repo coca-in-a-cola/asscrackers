@@ -1,9 +1,33 @@
-[gd_scene load_steps=5 format=3]
+[gd_scene load_steps=13 format=3]
 
 [ext_resource type="Script" path="res://scripts/ui/boot.gd" id="1"]
 [ext_resource type="PackedScene" path="res://scenes/ui/start_screen.tscn" id="2"]
 [ext_resource type="PackedScene" path="res://scenes/main.tscn" id="3"]
 [ext_resource type="PackedScene" path="res://scenes/ui/intro_dialogue.tscn" id="4"]
+[ext_resource type="Script" path="res://scripts/ui/dialogue_director.gd" id="5"]
+[ext_resource type="Script" path="res://addons/dialogue_manager/nodes/context/dialogue_state_context.gd" id="6"]
+[ext_resource type="Resource" path="res://data/campaign/main.tres" id="7"]
+[ext_resource type="PackedScene" path="res://scenes/ui/campaign_summary.tscn" id="8"]
+[sub_resource type="Animation" id="TitleFade"]
+resource_name = "title_fade"
+length = 0.2
+tracks/0/type = "value"
+tracks/0/path = NodePath("FadeLayer/Curtain:modulate:a")
+tracks/0/keys = {"times": PackedFloat32Array(0, 0.2), "transitions": PackedFloat32Array(1, 1), "update": 0, "values": [0.0, 1.0]}
+[sub_resource type="Animation" id="Black"]
+resource_name = "black"
+length = 0.15
+[sub_resource type="Animation" id="DesktopReveal"]
+resource_name = "desktop_reveal"
+length = 1.0
+tracks/0/type = "value"
+tracks/0/path = NodePath("FadeLayer/Curtain:modulate:a")
+tracks/0/keys = {"times": PackedFloat32Array(0, 1), "transitions": PackedFloat32Array(1, 1), "update": 0, "values": [1.0, 0.0]}
+tracks/1/type = "value"
+tracks/1/path = NodePath("Intro/StageDimmer:modulate:a")
+tracks/1/keys = {"times": PackedFloat32Array(0, 1), "transitions": PackedFloat32Array(1, 1), "update": 0, "values": [0.0, 1.0]}
+[sub_resource type="AnimationLibrary" id="Cinematics"]
+_data = {&"title_fade": SubResource("TitleFade"), &"black": SubResource("Black"), &"desktop_reveal": SubResource("DesktopReveal")}
 
 [node name="Boot" type="Control"]
 layout_mode = 3
@@ -14,6 +38,7 @@ grow_horizontal = 2
 grow_vertical = 2
 script = ExtResource("1")
 desktop_scene = ExtResource("3")
+campaign = ExtResource("7")
 
 [node name="StartScreen" parent="." instance=ExtResource("2")]
 unique_name_in_owner = true
@@ -34,8 +59,30 @@ grow_vertical = 2
 color = Color(0, 0, 0, 1)
 [node name="Intro" parent="." instance=ExtResource("4")]
 unique_name_in_owner = true
+[node name="CinematicPlayer" type="AnimationPlayer" parent="."]
+unique_name_in_owner = true
+libraries = {&"": SubResource("Cinematics")}
+[node name="DialogueDirector" type="Node" parent="." node_paths=PackedStringArray("stage", "cinematic_player")]
+unique_name_in_owner = true
+script = ExtResource("5")
+stage = NodePath("../Intro")
+cinematic_player = NodePath("../CinematicPlayer")
+[node name="NarrativeContext" type="Node" parent="DialogueDirector" node_paths=PackedStringArray("target")]
+script = ExtResource("6")
+alias = "Narrative"
+target = NodePath("..")
+[node name="CampaignContext" type="Node" parent="." node_paths=PackedStringArray("target")]
+script = ExtResource("6")
+alias = "Campaign"
+target = NodePath("..")
+[node name="CampaignLayer" type="CanvasLayer" parent="."]
+layer = 110
+[node name="Summary" parent="CampaignLayer" instance=ExtResource("8")]
+unique_name_in_owner = true
 
 [connection signal="start_requested" from="StartScreen" to="." method="_start"]
 [connection signal="started" from="Intro" to="." method="_on_dialogue_started"]
-[connection signal="desktop_requested" from="Intro" to="." method="_reveal_desktop"]
-[connection signal="finished" from="Intro" to="." method="_finish_intro"]
+[connection signal="cue_started" from="DialogueDirector" to="." method="_on_cue_started"]
+[connection signal="cue_finished" from="DialogueDirector" to="." method="_on_cue_finished"]
+[connection signal="finished" from="DialogueDirector" to="." method="_finish_dialogue"]
+[connection signal="return_requested" from="CampaignLayer/Summary" to="." method="_return_to_title"]

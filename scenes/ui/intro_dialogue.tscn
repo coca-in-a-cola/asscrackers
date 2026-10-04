@@ -1,139 +1,206 @@
-[gd_scene load_steps=6 format=3]
+[gd_scene load_steps=15 format=3]
 [ext_resource type="Script" path="res://scripts/ui/intro_dialogue.gd" id="1"]
-[ext_resource type="Theme" path="res://assets/ui/startup_theme.tres" id="2"]
-[ext_resource type="Resource" path="res://data/dialogues/intro.tres" id="3"]
-[sub_resource type="StyleBoxFlat" id="Panel"]
-bg_color = Color(0.025, 0.045, 0.07, 0.97)
-border_width_left = 1
-border_width_top = 1
-border_width_right = 1
-border_width_bottom = 1
-border_color = Color(0.39, 0.96, 0.85, 0.4)
-content_margin_left = 20.0
-content_margin_top = 16.0
-content_margin_right = 20.0
-content_margin_bottom = 16.0
-[sub_resource type="StyleBoxFlat" id="HeaderPlate"]
-bg_color = Color(0.025, 0.045, 0.07, 0.95)
+[ext_resource type="Resource" path="res://data/dialogues/intro.tres" id="2"]
+[ext_resource type="PackedScene" path="res://scenes/ui/components/dialogue_text_window.tscn" id="3"]
+[ext_resource type="Script" path="res://addons/dialogue_manager/nodes/responses_menu/dialogue_responses_menu.gd" id="4"]
+[ext_resource type="Script" path="res://scripts/ui/desktop_background.gd" id="5"]
+[ext_resource type="Theme" path="res://assets/ui/windows95/game_theme.tres" id="6"]
+[sub_resource type="Animation" id="Enter"]
+resource_name = "enter"
+length = 0.48
+tracks/0/type = "value"
+tracks/0/path = NodePath("View:modulate:a")
+tracks/0/keys = {"times": PackedFloat32Array(0), "transitions": PackedFloat32Array(1), "update": 0, "values": [1.0]}
+tracks/1/type = "value"
+tracks/1/path = NodePath("StageDimmer:modulate:a")
+tracks/1/keys = {"times": PackedFloat32Array(0), "transitions": PackedFloat32Array(1), "update": 0, "values": [0.0]}
+tracks/2/type = "value"
+tracks/2/path = NodePath("View/Stack/Actors/CuratorSlot/ConnectionWindow:modulate:a")
+tracks/2/keys = {"times": PackedFloat32Array(0, 0.3), "transitions": PackedFloat32Array(1, 1), "update": 0, "values": [0.0, 1.0]}
+tracks/3/type = "value"
+tracks/3/path = NodePath("View/Stack/Panels:modulate:a")
+tracks/3/keys = {"times": PackedFloat32Array(0, 0.3, 0.48), "transitions": PackedFloat32Array(1, 1, 1), "update": 0, "values": [0.0, 0.0, 1.0]}
+tracks/4/type = "value"
+tracks/4/path = NodePath("View/Stack/Hint:modulate:a")
+tracks/4/keys = {"times": PackedFloat32Array(0, 0.3, 0.48), "transitions": PackedFloat32Array(1, 1, 1), "update": 0, "values": [0.0, 0.0, 1.0]}
+[sub_resource type="Animation" id="PlayerEnter"]
+resource_name = "player_enter"
+length = 0.3
+tracks/0/type = "value"
+tracks/0/path = NodePath("View/Stack/Actors/PlayerSlot/PlayerPortrait:modulate:a")
+tracks/0/keys = {"times": PackedFloat32Array(0, 0.3), "transitions": PackedFloat32Array(1, 1), "update": 0, "values": [0.0, 1.0]}
+tracks/1/type = "value"
+tracks/1/path = NodePath("View/Stack/Panels/PlayerText:modulate:a")
+tracks/1/keys = {"times": PackedFloat32Array(0, 0.3), "transitions": PackedFloat32Array(1, 1), "update": 0, "values": [0.0, 1.0]}
+[sub_resource type="AnimationLibrary" id="PortraitAnimations"]
+_data = {&"player_enter": SubResource("PlayerEnter")}
+[sub_resource type="Animation" id="Exit"]
+resource_name = "exit"
+length = 0.25
+tracks/0/type = "value"
+tracks/0/path = NodePath("View:modulate:a")
+tracks/0/keys = {"times": PackedFloat32Array(0, 0.25), "transitions": PackedFloat32Array(1, 1), "update": 0, "values": [1.0, 0.0]}
+tracks/1/type = "value"
+tracks/1/path = NodePath("StageDimmer:modulate:a")
+tracks/1/keys = {"times": PackedFloat32Array(0, 0.25), "transitions": PackedFloat32Array(1, 1), "update": 0, "values": [1.0, 0.0]}
+[sub_resource type="Animation" id="PreviewReveal"]
+resource_name = "desktop_reveal"
+length = 1.0
+tracks/0/type = "value"
+tracks/0/path = NodePath("StageDimmer:modulate:a")
+tracks/0/keys = {"times": PackedFloat32Array(0, 1), "transitions": PackedFloat32Array(1, 1), "update": 0, "values": [0.0, 1.0]}
+[sub_resource type="AnimationLibrary" id="Animations"]
+_data = {&"enter": SubResource("Enter"), &"exit": SubResource("Exit"), &"desktop_reveal": SubResource("PreviewReveal")}
+[sub_resource type="StyleBoxFlat" id="Response"]
+bg_color = Color(0.835294, 0.854902, 0.839216, 1)
 content_margin_left = 12.0
-content_margin_top = 8.0
 content_margin_right = 12.0
-content_margin_bottom = 8.0
+content_margin_top = 6.0
+content_margin_bottom = 6.0
+[sub_resource type="StyleBoxFlat" id="ResponseFocus"]
+bg_color = Color(0.68, 0.80, 0.76, 1)
+border_width_left = 2
+border_width_top = 2
+border_width_right = 2
+border_width_bottom = 2
+border_color = Color(0.368627, 0.290196, 0.443137, 1)
 
 [node name="IntroDialogue" type="CanvasLayer"]
 layer = 100
 visible = false
 script = ExtResource("1")
-sequence = ExtResource("3")
+default_entry = ExtResource("2")
 [node name="StageDimmer" type="ColorRect" parent="."]
 unique_name_in_owner = true
-modulate = Color(1, 1, 1, 0)
 anchors_preset = 15
 anchor_right = 1.0
 anchor_bottom = 1.0
 grow_horizontal = 2
 grow_vertical = 2
-color = Color(0, 0, 0, 0.5)
-mouse_filter = 2
-[node name="View" type="MarginContainer" parent="."]
+color = Color(0, 0, 0, 0.18)
+mouse_filter = 0
+[node name="View" type="Control" parent="."]
 unique_name_in_owner = true
-anchors_preset = 15
-anchor_right = 1.0
-anchor_bottom = 1.0
-grow_horizontal = 2
-grow_vertical = 2
-theme = ExtResource("2")
-theme_override_constants/margin_left = 40
-theme_override_constants/margin_top = 32
-theme_override_constants/margin_right = 40
-theme_override_constants/margin_bottom = 32
+mouse_filter = 2
 [node name="Stack" type="VBoxContainer" parent="View"]
-layout_mode = 2
-theme_override_constants/separation = 16
-[node name="Header" type="PanelContainer" parent="View/Stack"]
-layout_mode = 2
-theme_override_styles/panel = SubResource("HeaderPlate")
-[node name="Row" type="HBoxContainer" parent="View/Stack/Header"]
-layout_mode = 2
-[node name="Channel" type="Label" parent="View/Stack/Header/Row"]
-layout_mode = 2
-size_flags_horizontal = 3
-theme_type_variation = &"BootAccent"
-text = "PRIVATE CHANNEL // NO RECORDING"
-[node name="Link" type="Label" parent="View/Stack/Header/Row"]
-layout_mode = 2
-theme_type_variation = &"BootSmall"
-text = "LINK ESTABLISHED_"
+unique_name_in_owner = true
+anchors_preset = 15
+anchor_right = 1.0
+anchor_bottom = 1.0
+grow_horizontal = 2
+grow_vertical = 2
+mouse_filter = 2
 [node name="Actors" type="HBoxContainer" parent="View/Stack"]
+unique_name_in_owner = true
 layout_mode = 2
-size_flags_vertical = 3
-theme_override_constants/separation = 32
-[node name="Player" type="VBoxContainer" parent="View/Stack/Actors"]
+mouse_filter = 2
+[node name="PlayerSlot" type="Control" parent="View/Stack/Actors"]
 layout_mode = 2
 size_flags_horizontal = 3
-theme_override_constants/separation = 8
-[node name="PlayerPortrait" type="TextureRect" parent="View/Stack/Actors/Player"]
+mouse_filter = 2
+[node name="PlayerPortrait" type="TextureRect" parent="View/Stack/Actors/PlayerSlot"]
 unique_name_in_owner = true
-custom_minimum_size = Vector2(0, 220)
-layout_mode = 2
-size_flags_vertical = 3
+anchors_preset = 15
+anchor_right = 1.0
+anchor_bottom = 1.0
+grow_horizontal = 2
+grow_vertical = 2
 expand_mode = 1
 stretch_mode = 5
 mouse_filter = 2
-[node name="PlayerName" type="Label" parent="View/Stack/Actors/Player"]
-unique_name_in_owner = true
-layout_mode = 2
-theme_type_variation = &"BootSmall"
-horizontal_alignment = 1
-[node name="Curator" type="VBoxContainer" parent="View/Stack/Actors"]
+[node name="CuratorSlot" type="Control" parent="View/Stack/Actors"]
 layout_mode = 2
 size_flags_horizontal = 3
-theme_override_constants/separation = 8
-[node name="CuratorPortrait" type="TextureRect" parent="View/Stack/Actors/Curator"]
+mouse_filter = 2
+[node name="ConnectionWindow" type="PanelContainer" parent="View/Stack/Actors/CuratorSlot"]
 unique_name_in_owner = true
-custom_minimum_size = Vector2(0, 220)
+anchors_preset = 15
+anchor_right = 1.0
+anchor_bottom = 1.0
+grow_horizontal = 2
+grow_vertical = 2
+theme_type_variation = &"DialogueFrame"
+mouse_filter = 2
+[node name="Stack" type="VBoxContainer" parent="View/Stack/Actors/CuratorSlot/ConnectionWindow"]
+layout_mode = 2
+theme_override_constants/separation = 0
+[node name="Titlebar" type="PanelContainer" parent="View/Stack/Actors/CuratorSlot/ConnectionWindow/Stack"]
+layout_mode = 2
+theme_type_variation = &"DialogueTitle"
+[node name="Row" type="HBoxContainer" parent="View/Stack/Actors/CuratorSlot/ConnectionWindow/Stack/Titlebar"]
+layout_mode = 2
+[node name="Title" type="Label" parent="View/Stack/Actors/CuratorSlot/ConnectionWindow/Stack/Titlebar/Row"]
+layout_mode = 2
+size_flags_horizontal = 3
+theme_type_variation = &"DialogueChrome"
+text = "PRIVATE CHANNEL"
+[node name="Status" type="Label" parent="View/Stack/Actors/CuratorSlot/ConnectionWindow/Stack/Titlebar/Row"]
+layout_mode = 2
+theme_type_variation = &"DialogueChrome"
+text = "●  ▴"
+[node name="Feed" type="Control" parent="View/Stack/Actors/CuratorSlot/ConnectionWindow/Stack"]
 layout_mode = 2
 size_flags_vertical = 3
+clip_contents = true
+mouse_filter = 2
+[node name="Background" type="Control" parent="View/Stack/Actors/CuratorSlot/ConnectionWindow/Stack/Feed"]
+anchors_preset = 15
+anchor_right = 1.0
+anchor_bottom = 1.0
+grow_horizontal = 2
+grow_vertical = 2
+theme = ExtResource("6")
+script = ExtResource("5")
+[node name="CuratorPortrait" type="TextureRect" parent="View/Stack/Actors/CuratorSlot/ConnectionWindow/Stack/Feed"]
+unique_name_in_owner = true
+anchors_preset = 12
+anchor_top = 1.0
+anchor_right = 1.0
+anchor_bottom = 1.0
+grow_horizontal = 2
+grow_vertical = 2
 expand_mode = 1
 stretch_mode = 5
 mouse_filter = 2
-[node name="CuratorName" type="Label" parent="View/Stack/Actors/Curator"]
+[node name="Panels" type="HBoxContainer" parent="View/Stack"]
 unique_name_in_owner = true
 layout_mode = 2
-theme_type_variation = &"BootSmall"
-horizontal_alignment = 1
-[node name="DialoguePanel" type="PanelContainer" parent="View/Stack"]
+mouse_filter = 2
+[node name="PlayerText" parent="View/Stack/Panels" instance=ExtResource("3")]
 unique_name_in_owner = true
 layout_mode = 2
-theme_override_styles/panel = SubResource("Panel")
-[node name="Content" type="VBoxContainer" parent="View/Stack/DialoguePanel"]
+[node name="CuratorText" parent="View/Stack/Panels" instance=ExtResource("3")]
+unique_name_in_owner = true
 layout_mode = 2
-theme_override_constants/separation = 12
-[node name="Heading" type="HBoxContainer" parent="View/Stack/DialoguePanel/Content"]
-layout_mode = 2
-[node name="Speaker" type="Label" parent="View/Stack/DialoguePanel/Content/Heading"]
+[node name="ChoiceScroll" type="ScrollContainer" parent="View"]
+unique_name_in_owner = true
+visible = false
+theme_override_styles/panel = SubResource("Response")
+horizontal_scroll_mode = 0
+[node name="Responses" type="VBoxContainer" parent="View/ChoiceScroll"]
 unique_name_in_owner = true
 layout_mode = 2
 size_flags_horizontal = 3
-theme_override_font_sizes/font_size = 20
-[node name="Progress" type="Label" parent="View/Stack/DialoguePanel/Content/Heading"]
+script = ExtResource("4")
+response_template = NodePath("Response")
+next_action = &"ui_accept"
+[node name="Response" type="Button" parent="View/ChoiceScroll/Responses"]
+visible = false
+layout_mode = 2
+theme_override_styles/normal = SubResource("Response")
+theme_override_styles/hover = SubResource("ResponseFocus")
+theme_override_styles/focus = SubResource("ResponseFocus")
+theme_override_styles/pressed = SubResource("ResponseFocus")
+theme_override_styles/disabled = SubResource("Response")
+[node name="Hint" type="Label" parent="View/Stack"]
 unique_name_in_owner = true
 layout_mode = 2
-theme_type_variation = &"BootSmall"
-[node name="Rule" type="HSeparator" parent="View/Stack/DialoguePanel/Content"]
-layout_mode = 2
-[node name="Body" type="RichTextLabel" parent="View/Stack/DialoguePanel/Content"]
-unique_name_in_owner = true
-custom_minimum_size = Vector2(0, 84)
-layout_mode = 2
-theme_override_colors/default_color = Color(0.9, 0.95, 0.95, 1)
-theme_override_font_sizes/normal_font_size = 22
-scroll_active = false
-[node name="HintPlate" type="PanelContainer" parent="View/Stack"]
-layout_mode = 2
-theme_override_styles/panel = SubResource("HeaderPlate")
-[node name="Hint" type="Label" parent="View/Stack/HintPlate"]
-layout_mode = 2
-theme_type_variation = &"BootSmall"
+theme_type_variation = &"DialogueHint"
 text = "ANY KEY / CLICK — CONTINUE     HOLD SPACE — FAST FORWARD"
 horizontal_alignment = 1
+[node name="AnimationPlayer" type="AnimationPlayer" parent="."]
+unique_name_in_owner = true
+libraries = {&"": SubResource("Animations")}
+[node name="PortraitAnimationPlayer" type="AnimationPlayer" parent="."]
+unique_name_in_owner = true
+libraries = {&"": SubResource("PortraitAnimations")}

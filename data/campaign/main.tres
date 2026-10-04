@@ -1,0 +1,14 @@
+[gd_resource type="Resource" script_class="CampaignDefinition" load_steps=8 format=3]
+[ext_resource type="Script" path="res://scripts/domain/data/campaign_definition.gd" id="1"]
+[ext_resource type="Resource" path="res://data/campaign/goals/hr.tres" id="2"]
+[ext_resource type="Resource" path="res://data/campaign/goals/finance.tres" id="3"]
+[ext_resource type="Resource" path="res://data/campaign/goals/vault.tres" id="4"]
+[ext_resource type="Resource" path="res://data/campaign/grading.tres" id="5"]
+[ext_resource type="Resource" path="res://data/dialogues/ending.tres" id="6"]
+[ext_resource type="Script" path="res://scripts/domain/data/campaign_goal.gd" id="7"]
+[resource]
+script = ExtResource("1")
+title = "ANUS INDUSTRIES / FIRST ASSIGNMENT"
+goals = Array[ExtResource("7")]([ExtResource("2"), ExtResource("3"), ExtResource("4")])
+grading = ExtResource("5")
+ending_dialogue = ExtResource("6")

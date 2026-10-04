@@ -1,0 +1,11 @@
+[gd_resource type="Resource" script_class="DialogueCharacter" load_steps=3 format=3]
+[ext_resource type="Script" path="res://scripts/ui/data/dialogue_character.gd" id="1"]
+[ext_resource type="Texture2D" path="res://assets/portraits/player.png" id="2"]
+[resource]
+script = ExtResource("1")
+id = &"Player"
+display_name = "YOU / TRAINEE"
+slot = 0
+reveal_on_first_line = true
+first_line_animation = &"player_enter"
+expressions = Dictionary[String, Texture2D]({"neutral": ExtResource("2")})

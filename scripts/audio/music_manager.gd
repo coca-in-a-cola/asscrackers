@@ -19,8 +19,13 @@ var _outgoing: AudioStreamPlayer
 var _crossfade: Tween
 var _mix := 1.0
 var _pending_cue: StringName = &""
+var _registered_service := false
 
 func _ready() -> void:
+	# Runtime lookup stays valid when editor/CLI compilation has no Autoload symbols.
+	if not Engine.has_singleton("MusicManager"):
+		Engine.register_singleton("MusicManager", self)
+		_registered_service = true
 	for cue in cues:
 		if cue == null or not cue.valid() or _catalog.has(cue.id):
 			push_error("MusicManager: invalid or duplicate cue configuration.")
@@ -139,3 +144,23 @@ func track_count() -> int:
 			for stream in cue.tracks:
 				streams[stream] = true
 	return streams.size()
+
+func stop_playback() -> void:
+	if _crossfade != null and _crossfade.is_valid():
+		_crossfade.kill()
+	for player in _players:
+		if is_instance_valid(player):
+			player.stop()
+			player.stream = null
+	_outgoing = null
+	_pending_cue = &""
+	cue_id = &""
+	track_index = 0
+	_mix = 1.0
+	changed.emit()
+
+func _exit_tree() -> void:
+	if _registered_service:
+		Engine.unregister_singleton("MusicManager")
+		_registered_service = false
+	stop_playback()
