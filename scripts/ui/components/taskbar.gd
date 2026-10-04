@@ -13,6 +13,8 @@ signal volume_changed(value: float)
 @onready var result_button: Button = %Result
 @onready var effects_toggle: CheckBox = %Effects
 @onready var music_toggle: CheckBox = %Music
+@onready var mute_toggle: CheckBox = %Mute
+@onready var volume_slider: HSlider = %Volume
 @onready var state_label: Label = %State
 @onready var location_label: Label = %Location
 @onready var exposure_label: Label = %GlobalExposure

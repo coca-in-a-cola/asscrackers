@@ -4,7 +4,7 @@ A cyberpunk password-recovery puzzle with corporate black humour and an unreliab
 
 ## Play
 
-Press any key on the silent entry screen (click, touch and gamepad buttons also work). This opens the desktop and starts the soundtrack. The entry screen credits, in order:
+Press any key on the silent entry screen (click, touch and gamepad buttons also work). Sycophant starts, the screen fades to black, and the player/curator appear for the first briefing. The entry screen credits, in order:
 
 ```text
 made by mice-seller
@@ -12,6 +12,8 @@ made with GPT6.1 Sol
 + Google Image Pro
 music by Karl Casey @ White Bat audio
 ```
+
+Any key/button/click completes a printing line, then advances on the next press. **Hold Space** to fast-forward dialogue. After four lines the desktop gradually appears behind the conversation. When the briefing ends, all applications are closed: open them through shortcuts or the taskbar.
 
 1. Open **G-D's Eye**, select a source and pay its Exposure price to retrieve information. New branches appear as you investigate.
 2. Type relevant **words and numbers**, pressing **Enter** after each to save a chip.
@@ -49,13 +51,13 @@ FX, Music, Mute and master volume remain available. Restart clears words, rules 
 
 ## Soundtrack
 
-The supplied MP3s in `assets/sfx/` play in order: **Hackers → New Beginnings → The Saga → repeat**, by Karl Casey / White Bat audio. Tracks overlap with a 0.75-second equal-power crossfade. Music pauses/resumes from the taskbar; Mute silences music and action effects while playback continues. Volume zero is silent. The old generated music loop is removed; short generated action effects remain.
+**Sycophant** accompanies the entire intro, repeating if reading takes longer than the song. At handoff it crossfades over 1.5 seconds into **Hackers → New Beginnings → The Saga → repeat**, by Karl Casey / White Bat audio. Background tracks overlap for 0.75 seconds. The scene Autoload **MusicManager** owns playback; its exported MusicCue resources are editable in Inspector (`data/audio/intro.tres`, `background.tres`). Music pauses/resumes from the taskbar; Mute silences music and action effects while playback continues. Volume zero is silent. Short generated action effects remain.
 
-No audio players or mission are created before the first accepted input. The entry gesture starts playback synchronously and is consumed, including the initiating key's held repeats/release, so it does not enter a fragment or activate a desktop control. Mission restart never returns to the entry screen. See [startup and audio](docs/startup-audio.md).
+Before input the singleton's players are idle; there is no desktop or mission. The entry gesture starts playback synchronously. Entry and handoff held keys are consumed until release so they cannot type a fragment or open an application accidentally. Mission restart never returns to the intro or resets playback. See [intro and audio architecture](docs/startup-audio.md).
 
 ## Desktop
 
-Four fixed-size applications sit on teal grid wallpaper. Drag their titlebars to move them and use **X** to close them. Shortcuts and taskbar buttons reopen the same window with its position and content preserved. No resize handles are provided. **Closing the terminal does not stop the botnet**: progress, Exposure and a Stop button remain on the taskbar. **Read Me** opens help.
+Four fixed-size applications start closed on teal grid wallpaper. Open them through shortcuts or the taskbar, drag their titlebars to move them and use **X** to close them. Reopening preserves position and content. No resize handles are provided. **Closing the terminal does not stop the botnet**: progress, Exposure and Stop remain on the taskbar. **Read Me** opens help.
 
 G-D's Eye is a scrollable directed graph rooted at the target's identity. Clicking a leaf opens an adjacent information subwindow. An unretrieved leaf offers a priced query; retrieved content can be read again for free. Some sources require multiple retrieved parents. The first mission's useful recon trail costs 45 Exposure; an optional club record is a distraction.
 
@@ -70,8 +72,8 @@ godot --path .
 godot --headless --path . --editor --import --quit
 godot --headless --path . --script res://tests/run_tests.gd
 godot --headless --path . --script res://tests/ui_components.gd
-godot --path . --script res://tests/ui_smoke.gd
-godot --path . --script res://tests/startup_audio.gd
+godot --path . --max-fps 60 --quit-after 3000 --script res://tests/ui_smoke.gd
+godot --path . --max-fps 60 --quit-after 3000 --script res://tests/startup_audio.gd
 ```
 
 If Godot is not on PATH, substitute its executable path. On the development machine:
@@ -86,13 +88,14 @@ Default window 1440×900; minimum 1024×720. UI tests capture screenshots to `us
 
 `candidate_generator.gd` owns expansion; `dictionary_service.gd` owns fragments; `exposure_budget.gd` owns exact fixed-point risk; `intel_service.gd` owns paid discovery; `attack_engine.gd` owns the request snapshot and model clock; `game_session.gd` coordinates the mission independently of window visibility. `service_catalog.gd` reads names and time coefficients from `data/services/services.json`.
 
-One authored English mission; no network, external cracking process, saves or procedural targets. The local MP3 soundtrack, generated action effects and procedural backgrounds require no runtime services. The operator's self-portrait uses `avatars/avatar.png`, configured in `data/ui/operator.tres`. Real-user usability, subjective audio and standalone export still need human validation.
+One authored English mission; no network, external cracking process, saves or procedural targets. The local MP3 soundtrack, generated action effects and procedural backgrounds require no runtime services. The operator's self-portrait uses `assets/portraits/player-icon.png`, configured in `data/ui/operator.tres`. Real-user usability, subjective audio and standalone export still need human validation.
 
 ## UI authoring
 
-- `scenes/boot.tscn` / `scenes/ui/start_screen.tscn`: silent entry, ordered credits, one-shot input gateway and delayed desktop creation.
+- `scenes/boot.tscn` / `scenes/ui/start_screen.tscn`: silent credits, phased fade orchestration, held-key isolation and delayed control handoff.
+- `scenes/ui/intro_dialogue.tscn` / `data/dialogues/intro.tres`: editor-authored conversation, transparent portraits, skippable typewriting and Space acceleration.
 - `assets/ui/startup_theme.tres`: isolated dark terminal palette and typography; `startup_background.gd` draws its grid/registration marks. The desktop retains its own pastel theme.
-- `scripts/ui/game_audio.gd`: two music players, playlist/crossfade/pause state and generated action effects. Tracks are serialized on the main scene's Audio node; `default_bus_layout.tres` routes Music and SFX independently to Master.
+- `scenes/audio/music_manager.tscn` / `scripts/audio/music_manager.gd`: persistent two-player music and exported MusicCue inputs. `data/audio/` owns tracks/order/timing. `game_audio.gd` owns action tones only; `default_bus_layout.tres` routes Music/SFX independently.
 - `scenes/ui/atoms/`: button, icon, checkbox, input, window background, titlebar, statusbar, modal layer.
 - `scenes/ui/components/`: window, fragment slot, dialog, desktop shortcut, intel detail, retro effects. The earlier fact-card primitive remains available.
 - `scenes/ui/panels/`: terminal, dictionary, operator, dossier, taskbar, help, result.

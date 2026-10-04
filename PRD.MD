@@ -11,6 +11,7 @@ One authored mission. Pastel retro desktop, absurd commentary and black humour. 
 ## Required interaction
 
 - Start with a silent cyberpunk entry screen: made by mice-seller, made with GPT6.1 Sol, + Google Image Pro, then music by Karl Casey @ White Bat audio. Press any key (or click/touch/gamepad button) creates the desktop and starts music without leaking the entry input into game controls.
+- Fade to black, reveal player then curator, and play the trainee briefing. Include exactly "Wake the fuck up, samurai. We have asses to crack". Any fresh button completes/advances text; holding Space accelerates dialogue. The empty desktop appears behind the conversation after four lines; applications remain closed until manually opened.
 - Exactly **one dictionary**, with up to **six fragments**, or **five** with Special characters enabled.
 - The dictionary is the large central workspace. All six slots remain visible.
 - A large input below it accepts a word or number. **Enter or Add saves it.**
@@ -32,7 +33,7 @@ Six fragments yield at most **1956** candidates. Five fragments with six rule va
 - The old ten-request limit and RATE_LIMIT defeat are removed. Every generated candidate can be checked; an exhausted job returns control to the player unless traced.
 - A full 1956-candidate first-level pass takes at most 60 seconds; time is proportional to unique candidates and the service's catalog coefficient. Early success and Stop end work sooner.
 - Background requests, victory, trace defeat and clean restart. No free automatic clue bypasses paid recon.
-- Strange commentary, optional FX, generated action effects and the supplied Karl Casey soundtrack. The playlist cycles Hackers → New Beginnings → The Saga with crossfades; Music pauses/resumes, and Mute/volume apply to both audio categories. Mission restart preserves playback and does not repeat the entry screen.
+- Strange commentary, optional FX and generated action effects. A data-driven MusicManager scene Autoload plays Sycophant throughout the intro, crossfading at handoff into Hackers → New Beginnings → The Saga. Music pauses/resumes; Mute/volume apply to both categories. Mission restart preserves playback and does not repeat the intro.
 - Godot 4.7 / GDScript / GL Compatibility. Local simulation without runtime services.
 
 ## Success criteria

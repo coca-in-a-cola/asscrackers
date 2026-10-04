@@ -1,4 +1,4 @@
-[gd_scene load_steps=27 format=3]
+[gd_scene load_steps=24 format=3]
 [ext_resource type="Script" path="res://scripts/ui/main.gd" id="1"]
 [ext_resource type="Theme" path="res://assets/ui/windows95/game_theme.tres" id="2"]
 [ext_resource type="Script" path="res://scripts/ui/desktop_background.gd" id="3"]
@@ -22,9 +22,6 @@
 [ext_resource type="Texture2D" path="res://assets/ui/windows95/icons/icons--icon-big-help--2-764.png" id="21"]
 [ext_resource type="PackedScene" path="res://scenes/ui/components/retro_effects.tscn" id="22"]
 [ext_resource type="PackedScene" path="res://scenes/ui/components/intel_detail.tscn" id="23"]
-[ext_resource type="AudioStream" path="res://assets/sfx/Karl Casey - Hackers.mp3" id="24"]
-[ext_resource type="AudioStream" path="res://assets/sfx/Karl Casey - New Beginnings.mp3" id="25"]
-[ext_resource type="AudioStream" path="res://assets/sfx/Karl Casey - The Saga.mp3" id="26"]
 [node name="AssCrackers" type="Control"]
 layout_mode = 3
 anchors_preset = 15
@@ -43,7 +40,6 @@ script = ExtResource("4")
 [node name="Audio" type="Node" parent="."]
 unique_name_in_owner = true
 script = ExtResource("5")
-music_tracks = Array[AudioStream]([ExtResource("24"), ExtResource("25"), ExtResource("26")])
 [node name="VoiceTimer" type="Timer" parent="."]
 unique_name_in_owner = true
 wait_time = 24.0
@@ -108,15 +104,19 @@ mouse_filter = 2
 script = ExtResource("15")
 [node name="Terminal" parent="Applications" instance=ExtResource("6")]
 unique_name_in_owner = true
+visible = false
 layout_mode = 0
 [node name="Dictionary" parent="Applications" instance=ExtResource("7")]
 unique_name_in_owner = true
+visible = false
 layout_mode = 0
 [node name="Operator" parent="Applications" instance=ExtResource("8")]
 unique_name_in_owner = true
+visible = false
 layout_mode = 0
 [node name="Dossier" parent="Applications" instance=ExtResource("9")]
 unique_name_in_owner = true
+visible = false
 layout_mode = 0
 [node name="IntelDetail" parent="." instance=ExtResource("23")]
 unique_name_in_owner = true

@@ -4,8 +4,9 @@ extends Control
 
 signal windows_changed
 signal window_moved(application_name: StringName)
+signal layout_ready
 
-var active_application: StringName = &"Dictionary"
+var active_application: StringName = &""
 var _dragging: Control
 var _drag_offset := Vector2.ZERO
 var _initialized := false
@@ -13,6 +14,7 @@ var _initialized := false
 func _ready() -> void:
 	for window in get_children():
 		window.closable = true
+		window.active = false
 		window.activation_requested.connect(focus_application.bind(StringName(window.name)))
 		window.close_requested.connect(close_application.bind(StringName(window.name)))
 		window.drag_started.connect(_start_drag.bind(window))
@@ -41,22 +43,38 @@ func _initialize_layout() -> void:
 			&"Operator": Rect2(844, 44, 350, 172),
 			&"Dossier": Rect2(830, 234, 590, 538),
 		}
+	# Hidden Containers do not complete their wrapped-text reflow. Lay windows
+	# out invisibly, then restore their authored visibility before interaction.
+	var opacity := modulate.a
+	modulate.a = 0.0
+	var visibility: Dictionary = {}
 	for window in get_children():
+		visibility[window] = window.visible
+		window.show()
 		var rect: Rect2 = placements[StringName(window.name)]
 		window.size = rect.size
 		window.position = rect.position
 	# Wrapped labels first need a real width. Their temporary zero-width minimum
 	# height must not become a permanently oversized free-floating window.
-	await get_tree().process_frame
-	await get_tree().process_frame
+	for frame in 4:
+		await get_tree().process_frame
 	for window in get_children():
 		var rect: Rect2 = placements[StringName(window.name)]
 		window.size = rect.size.max(window.get_combined_minimum_size())
+		window.visible = visibility[window]
 	_initialized = true
+	modulate.a = opacity
 	_clamp_windows()
 	focus_application(active_application)
+	windows_changed.emit()
+	layout_ready.emit()
+
+func layout_is_ready() -> bool:
+	return _initialized
 
 func application(application_name: StringName) -> Control:
+	if application_name.is_empty():
+		return null
 	return get_node_or_null(NodePath(application_name)) as Control
 
 func open_application(application_name: StringName) -> void:
@@ -87,6 +105,8 @@ func close_application(application_name: StringName) -> void:
 	windows_changed.emit()
 
 func focus_application(application_name: StringName) -> void:
+	if not _initialized:
+		return
 	var window := application(application_name)
 	if window == null or not window.visible:
 		return

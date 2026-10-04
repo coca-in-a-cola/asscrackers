@@ -34,6 +34,7 @@ var remove_buttons: Array[Button] = []
 var selected_intel := ""
 var effects_enabled := true
 var mission_ready := false
+var intro_pending := false
 var log_lines: Array[Dictionary] = []
 var _follow_pending := false
 var _log_scroll_ticket := 0
@@ -53,6 +54,8 @@ func _ready() -> void:
 	log_view.get_v_scroll_bar().gui_input.connect(_log_scroll_input)
 	%Help.body.text = copy.help_text
 	%Taskbar.location_label.text = "ASS / CRACKERS · " + copy.location
+	MusicManager.changed.connect(_sync_audio_controls)
+	_sync_audio_controls()
 	_restart()
 
 func _update_canvas_size() -> void:
@@ -72,6 +75,10 @@ func _set_effects(enabled: bool) -> void:
 	%RetroEffects.visible = enabled
 
 func _activate_application(application_name: StringName) -> void:
+	if intro_pending:
+		return
+	if not %Applications.layout_is_ready():
+		await %Applications.layout_ready
 	if application_name == &"Help":
 		_show_help()
 		return
@@ -137,6 +144,8 @@ func _position_intel_popup() -> void:
 	%IntelDetail.position = point.clamp(Vector2(8, 8), Vector2(maxf(8, size.x - popup_size.x - 8), maxf(8, %Taskbar.position.y - popup_size.y - 8)))
 
 func _query_intel(id: String) -> void:
+	if intro_pending:
+		return
 	var response: Dictionary = session.request_intel(id)
 	if response.get("purchased", false):
 		audio.play("hint")
@@ -146,20 +155,29 @@ func _stop_attack() -> void:
 	session.stop_attack()
 
 func _set_music(enabled: bool) -> void:
-	audio.set_music(enabled)
-	%Taskbar.music_toggle.set_pressed_no_signal(audio.music_enabled)
+	MusicManager.set_enabled(enabled)
 
-func start_audio() -> void:
-	# Called synchronously by the entry scene's accepted user gesture.
-	_set_music(true)
+func _sync_audio_controls() -> void:
+	audio.set_muted(MusicManager.muted)
+	audio.set_level(MusicManager.level)
+	%Taskbar.music_toggle.set_pressed_no_signal(MusicManager.enabled)
+	%Taskbar.mute_toggle.set_pressed_no_signal(MusicManager.muted)
+	%Taskbar.volume_slider.set_value_no_signal(MusicManager.level)
+
+func finish_intro() -> void:
+	intro_pending = false
+	%VoiceTimer.start()
+	_restore_focus()
 
 func _set_muted(enabled: bool) -> void:
-	audio.set_muted(enabled)
+	MusicManager.set_muted(enabled)
 
 func _set_volume(value: float) -> void:
-	audio.set_level(value)
+	MusicManager.set_level(value)
 
 func _show_help() -> void:
+	if intro_pending:
+		return
 	%Applications.cancel_drag()
 	tutorial.show()
 	%Help.active = true
@@ -181,14 +199,18 @@ func _hide_result() -> void:
 	_restore_focus()
 
 func _restore_focus() -> void:
+	if intro_pending:
+		return
 	if tutorial.visible:
 		%Help.focus_primary()
 	elif modal.visible:
 		%Result.focus_primary()
 	elif input.editable and %Dictionary.visible:
 		input.grab_focus()
-	else:
+	elif result_button.visible:
 		result_button.grab_focus()
+	else:
+		$DesktopIcons/TerminalShortcut.grab_focus()
 
 func _unhandled_key_input(event: InputEvent) -> void:
 	if event.is_action_pressed("ui_cancel"):
@@ -217,7 +239,10 @@ func _restart() -> void:
 	input.clear()
 	voice_index = 0
 	%VoiceTimer.wait_time = 24.0
-	%VoiceTimer.start()
+	if intro_pending:
+		%VoiceTimer.stop()
+	else:
+		%VoiceTimer.start()
 	if not loaded.ok:
 		modal_title.text = "MISSION DATA ERROR"
 		modal_body.text = loaded.message
@@ -237,6 +262,8 @@ func _restart() -> void:
 	_restore_focus()
 
 func _submit_fragment(value: String) -> Dictionary:
+	if intro_pending:
+		return {"ok": false, "message": "Wait for the briefing to finish."}
 	var response: Dictionary = session.add_fragment(value)
 	_set_feedback(response.message, not response.ok)
 	if response.ok:
@@ -261,6 +288,8 @@ func _toggle_special_characters(enabled: bool) -> void:
 	_set_feedback(response.message, not response.ok)
 
 func _run_dictionary() -> void:
+	if intro_pending:
+		return
 	if not input.text.strip_edges().is_empty():
 		_set_feedback("You have an unsaved fragment. Press Enter to save it, or clear the input first.", true)
 		input.grab_focus()

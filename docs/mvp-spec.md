@@ -6,7 +6,9 @@ Product: [PRD](../PRD.MD). Technical rationale: [hashcat model](hashcat-model.md
 
 F5 opens `boot.tscn`, displaying only the silent start screen. Its ordered credits name mice-seller, GPT6.1 Sol, Google Image Pro and Karl Casey @ White Bat audio. A non-echo key press, mouse click, touch press or gamepad button creates the desktop and starts the MP3 soundtrack in the same input callback. Mouse motion, wheel, release and key echo do not enter. The entry key's repeats/release are consumed before normal desktop typing resumes.
 
-Music plays Hackers → New Beginnings → The Saga → repeat with 0.75-second equal-power crossfades. Music pauses both players and their transition tween; re-enabling resumes rather than restarts. Mute/volume affect both Music and SFX independently of playback. Restart leaves playback and preferences intact, with no entry-screen replay. The old procedural music generator is removed; short action tones remain. Details: [startup and audio](startup-audio.md).
+The credit screen fades to black, player then curator appear, and thirteen manually advanced lines introduce the trainee assignment. The first line is exactly `Wake the fuck up, samurai. We have asses to crack`. After four lines the desktop appears behind the conversation over 1 s. Any fresh button completes/advances a line; holding Space accelerates typing and progression. Tools and idle voices are blocked until the 0.25 s final handoff. Applications start closed with no active window.
+
+Scene Autoload MusicManager receives editor-authored MusicCue resources. Sycophant repeats throughout the intro, then crossfades for 1.5 s into Hackers → New Beginnings → The Saga → repeat. Per-track overlap is 0.75 s. Music pauses both players/tween; Mute/volume update music and scene-local effects. Restart preserves playback/preferences and does not repeat the intro. Details: [startup and audio](startup-audio.md).
 
 ## Input and slots
 
@@ -100,6 +102,8 @@ Restart invalidates old work generations, clears fragments/candidates, resets bo
 - `game_session.gd`: mission lifecycle, runtime clock, readiness guards and events.
 - `main.gd`: presentation projections and requests, no domain state ownership.
 - `boot.gd` / `start_screen.gd`: entry lifecycle, credits and accepted-input isolation.
-- `game_audio.gd`: soundtrack and action-audio ownership, independent of mission state.
+- `dialogue_playback.gd` / `intro_dialogue.gd`: conversation cursor, reveal barrier, portrait/text projection and acceleration.
+- `music_manager.gd` / `MusicCue`: persistent music state with serialized editor inputs.
+- `game_audio.gd`: scene-local action tones, following singleton volume/mute preferences.
 
 Autogeneration is the intended game mechanic. The player supplies semantic clues, not exact concatenation syntax.

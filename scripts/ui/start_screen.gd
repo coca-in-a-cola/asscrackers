@@ -6,6 +6,7 @@ var accepted := false
 var _prompt_tween: Tween
 
 func _ready() -> void:
+	$Margin/Stack/Footer/Audio.text = "SOUNDTRACK // %02d FILES" % MusicManager.track_count()
 	resized.connect(_update_layout)
 	_update_layout()
 	_prompt_tween = create_tween().set_loops()

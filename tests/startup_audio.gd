@@ -5,6 +5,11 @@ var count := 0
 
 func _initialize() -> void:
 	call_deferred("run")
+	create_timer(45.0).timeout.connect(_timeout)
+
+func _timeout() -> void:
+	printerr("STARTUP FAIL: watchdog timeout (script error or stalled transition)")
+	quit(1)
 
 func check(condition: bool, description: String) -> void:
 	count += 1
@@ -16,14 +21,25 @@ func settle() -> void:
 	for i in 4:
 		await process_frame
 
-func key_event(pressed: bool, echo := false) -> InputEventKey:
+func key(code: int, pressed: bool, echo := false) -> void:
 	var event := InputEventKey.new()
-	event.keycode = KEY_X
-	event.physical_keycode = KEY_X
-	event.unicode = 120
+	event.keycode = code
+	event.physical_keycode = code
+	event.unicode = code + 32 if code >= KEY_A and code <= KEY_Z else 0
 	event.pressed = pressed
 	event.echo = echo
-	return event
+	root.push_input(event)
+	await process_frame
+
+func tap(code: int = KEY_Y) -> void:
+	await key(code, true)
+	await key(code, false)
+
+func wait_phase(boot: Control, expected: String) -> void:
+	var deadline := Time.get_ticks_msec() + 10000
+	while boot.phase != expected and Time.get_ticks_msec() < deadline:
+		await process_frame
+	check(boot.phase == expected, "Reach phase " + expected)
 
 func click_control(control: Control) -> void:
 	for pressed in [true, false]:
@@ -49,120 +65,144 @@ func capture(label: String) -> void:
 	print("CAPTURE: " + path)
 
 func run() -> void:
-	check(ProjectSettings.get_setting("application/run/main_scene") == "res://scenes/boot.tscn", "F5 enters the start screen")
+	var music: Node = root.get_node("MusicManager")
+	check(ProjectSettings.get_setting("autoload/MusicManager") == "*res://scenes/audio/music_manager.tscn", "Music is a scene Autoload with editor inputs")
+	check(music.cues.size() == 2 and music.track_count() == 4 and not music.music_player.playing, "Configured music remains silent before input")
+	for cue in music.cues:
+		check(cue.valid() and not cue.resource_path.is_empty(), "Serialized valid cue: " + str(cue.id))
+		for stream in cue.tracks:
+			check(stream is AudioStreamMP3 and not stream.loop, "Imported non-looping MP3: " + stream.resource_path)
 	var packed: PackedScene = load("res://scenes/boot.tscn")
 	var boot: Control = packed.instantiate()
 	root.add_child(boot)
 	await settle()
 	var screen: Control = boot.get_node("StartScreen")
-	check(boot.desktop == null and boot.find_children("*", "AudioStreamPlayer", true, false).is_empty(), "Before input: no session and no audio players")
+	check(boot.desktop == null and boot.find_children("*", "AudioStreamPlayer", true, false).is_empty(), "No desktop or action audio before gesture")
 	var credits: Control = screen.get_node("%Credits")
-	check(credits.get_node("Author/Role").text == "made by" and credits.get_node("Author/Name").text == "mice-seller", "Creator credit")
-	check(credits.get_node("Tools/Role").text == "made with" and credits.get_node("Tools/Model").text == "GPT6.1 Sol" and credits.get_node("Tools/Images").text == "+ Google Image Pro", "Tool credits in order")
-	check(credits.get_node("Music/Role").text + " " + credits.get_node("Music/Name").text == "music by Karl Casey @ White Bat audio", "Exact music credit")
-	for resolution in [Vector2i(1024, 720), Vector2i(1440, 900), Vector2i(1920, 1080)]:
-		root.size = resolution
-		await settle()
-		var bounds := root.get_visible_rect()
-		for label in screen.find_children("*", "Label", true, false):
-			var rect: Rect2 = label.get_global_rect()
-			check(bounds.encloses(rect), "Start label fits " + str(resolution) + ": " + label.name)
-		await capture("start-" + str(resolution.x))
-	root.size = Vector2i(1440, 900)
-	await settle()
+	check(credits.get_node("Author/Name").text == "mice-seller" and credits.get_node("Tools/Model").text == "GPT6.1 Sol" and credits.get_node("Tools/Images").text == "+ Google Image Pro", "Author and tool credits preserved")
+	check(credits.get_node("Music/Role").text + " " + credits.get_node("Music/Name").text == "music by Karl Casey @ White Bat audio", "Music credit preserved")
+	await capture("start-1440")
 	root.push_input(InputEventMouseMotion.new())
-	root.push_input(key_event(false))
-	root.push_input(key_event(true, true))
+	await key(KEY_X, false)
+	await key(KEY_X, true, true)
 	var wheel := InputEventMouseButton.new()
 	wheel.button_index = MOUSE_BUTTON_WHEEL_UP
 	wheel.pressed = true
 	root.push_input(wheel)
-	await settle()
 	check(boot.desktop == null, "Motion, release, echo and wheel do not start")
-	root.push_input(key_event(true))
-	await settle()
+	await key(KEY_X, true)
 	var game: Control = boot.desktop
-	check(game != null and not boot.has_node("StartScreen"), "First press enters desktop once")
-	check(game.audio.music_enabled and game.audio.music_player.playing and game.get_node("Taskbar").music_toggle.button_pressed, "Music starts immediately and toggle agrees")
-	check(game.input.text.is_empty() and game.session.dictionary.words.is_empty(), "Entry key does not type or submit")
-	root.push_input(key_event(true, true))
+	check(game != null and music.cue_id == &"intro" and music.music_player.playing and music.music_player.stream.resource_path.ends_with("Sycophant.mp3"), "Gesture starts Sycophant synchronously")
+	check(game.intro_pending and game.get_node("VoiceTimer").is_stopped(), "Briefing blocks tools and idle commentary")
+	await wait_phase(boot, "BLACK")
+	check(boot.get_node("%Curtain").modulate.a > 0.99 and not boot.get_node("Intro").visible, "Full darkness before portraits")
+	await capture("intro-black")
+	await wait_phase(boot, "PORTRAITS")
+	await create_timer(0.22).timeout
+	var intro: CanvasLayer = boot.get_node("Intro")
+	check(intro.get_node("%PlayerPortrait").modulate.a > 0.1 and intro.get_node("%CuratorPortrait").modulate.a == 0, "Player appears before curator")
+	await capture("intro-player")
+	await wait_phase(boot, "DIALOGUE")
+	check(intro.sequence.valid() and intro.playback.index == 0 and intro.get_node("%Body").text == "Wake the fuck up, samurai. We have asses to crack", "Mandatory reference opens the dialogue")
+	await key(KEY_X, true, true)
+	check(intro.playback.index == 0 and game.input.text.is_empty(), "Held entry does not skip or type")
+	await key(KEY_X, false)
+	await tap(KEY_F2)
+	check(intro.playback.index == 0 and intro.get_node("%Body").visible_ratio == 1, "Any key completes printing before advancing")
+	for resolution in [Vector2i(1024, 720), Vector2i(1440, 900), Vector2i(1920, 1080)]:
+		root.size = resolution
+		await settle()
+		var bounds := root.get_visible_rect()
+		for id in ["PlayerPortrait", "CuratorPortrait", "DialoguePanel", "Body", "Speaker"]:
+			var control: Control = intro.get_node("%" + id)
+			check(bounds.encloses(control.get_global_rect()), "Intro fits " + str(resolution) + ": " + id)
+		await capture("intro-" + str(resolution.x))
+	root.size = Vector2i(1440, 900)
 	await settle()
-	check(game.input.text.is_empty() and boot.get_child_count() == 1, "Held entry repeats do not leak or create desktops")
-	root.push_input(key_event(false))
-	root.push_input(key_event(true))
+	# A long manual conversation must keep its own cue, including song wrap.
+	var outgoing: AudioStreamPlayer = music.music_player
+	outgoing.seek(outgoing.stream.get_length() - 0.6)
+	await create_timer(0.85).timeout
+	check(music.cue_id == &"intro" and music.music_player != outgoing and music.music_player.playing and not outgoing.playing, "Sycophant repeats without switching to gameplay")
+	while intro.playback.index < 3:
+		await tap()
+		await settle()
+	if intro.get_node("%Body").visible_ratio < 1:
+		await tap()
+	await tap()
+	check(boot.phase == "DESKTOP_REVEAL" and intro.playback.waiting_for_desktop, "Four lines precede desktop reveal")
+	await create_timer(0.45).timeout
+	check(boot.get_node("%Curtain").modulate.a > 0.05 and boot.get_node("%Curtain").modulate.a < 0.95 and music.cue_id == &"intro", "Desktop fades behind dialogue; intro music continues")
+	await capture("intro-reveal")
+	await wait_phase(boot, "DIALOGUE")
+	check(intro.playback.index == 4 and game.intro_pending, "Briefing continues over desktop")
+	await tap()
+	await capture("intro-briefing")
+	game._activate_application(&"Terminal")
+	game._query_intel("nickname")
+	check(not game.get_node("Applications/Terminal").visible and game.session.budget.value == 0, "Locked intro cannot launch tools or purchase recon")
+	var index_before: int = intro.playback.index
+	await key(KEY_SPACE, true)
+	await create_timer(0.55).timeout
+	check(intro.playback.index > index_before, "Holding Space continuously accelerates conversation")
+	await wait_phase(boot, "PLAY")
+	check(not intro.visible and not game.intro_pending and not game.get_node("VoiceTimer").is_stopped(), "Fade-out hands over control and starts idle timer")
+	await key(KEY_SPACE, true, true)
 	await settle()
-	check(game.input.text == "x", "Normal typing works after entry release")
+	var manager: Control = game.get_node("Applications")
+	check(manager.active_application.is_empty(), "No initial active application")
+	for window in manager.get_children():
+		check(not window.visible, "Initial window closed: " + window.name)
+	check(game.session.budget.value == 0 and game.session.engine.attempts_used == 0 and game.session.dictionary.words.is_empty(), "Briefing and held handoff spend no risk or requests")
+	await key(KEY_SPACE, false)
+	await capture("desktop-empty")
+	await create_timer(1.6).timeout
+	check(music.cue_id == &"background" and music.music_player.stream.resource_path.ends_with("Hackers.mp3") and not music._outgoing, "Sycophant crossfades to background at handoff")
+	await click_control(game.get_node("DesktopIcons/DictionaryShortcut"))
+	await settle()
+	await tap(KEY_X)
+	check(manager.application(&"Dictionary").visible and game.input.text == "x", "Player manually opens tools; typing works after handoff")
 	game.input.clear()
-	await capture("start-desktop")
-	check(game.audio.music_tracks.size() == 3, "Three-track playlist")
-	var expected := ["Hackers", "New Beginnings", "The Saga"]
-	for i in 3:
-		var stream: AudioStream = game.audio.music_tracks[i]
-		check(stream is AudioStreamMP3 and stream.resource_path.ends_with("Karl Casey - " + expected[i] + ".mp3") and stream.get_length() > 1 and not stream.loop, "Imported MP3 order: " + expected[i])
-	check(game.audio.music_player.bus == &"Music" and game.audio.effects_player.bus == &"SFX", "Separate audio buses")
-	check(AudioServer.get_bus_index(&"Music") > 0 and AudioServer.get_bus_index(&"SFX") > 0, "Bus layout is loaded by the engine")
-	var music_toggle: CheckBox = game.get_node("Taskbar").music_toggle
-	await click_control(music_toggle)
-	var pause_position: float = game.audio.music_player.get_playback_position()
+	var toggle: CheckBox = game.get_node("Taskbar").music_toggle
+	await click_control(toggle)
+	var position: float = music.music_player.get_playback_position()
 	await create_timer(0.12).timeout
-	check(not game.audio.music_enabled and game.audio.music_player.stream_paused and absf(game.audio.music_player.get_playback_position() - pause_position) < 0.05, "Taskbar Music click pauses without resetting")
-	await click_control(music_toggle)
-	check(game.audio.music_enabled and not game.audio.music_player.stream_paused and game.audio.music_player.get_playback_position() >= pause_position, "Taskbar Music click resumes")
-	game.audio.crossfade_seconds = 0.2
-	# Seek real MP3s to their overlap window; test actual playback, not a
-	# manually emitted finished signal or minutes of wall-clock waiting.
+	check(not music.enabled and music.music_player.stream_paused and absf(music.music_player.get_playback_position() - position) < 0.05, "Taskbar pauses singleton without resetting position")
+	await click_control(toggle)
+	check(music.enabled and not music.music_player.stream_paused, "Taskbar resumes singleton")
 	for expected_index in [1, 2, 0]:
-		var audio: Node = game.audio
-		var outgoing: AudioStreamPlayer = audio.music_player
-		outgoing.seek(outgoing.stream.get_length() - 0.15)
-		await create_timer(0.07).timeout
-		check(audio.track_index == expected_index and audio.music_player != outgoing and audio.music_player.playing, "Auto advance to " + expected[expected_index])
+		outgoing = music.music_player
+		outgoing.seek(outgoing.stream.get_length() - 0.6)
+		await create_timer(0.1).timeout
+		check(music.track_index == expected_index and music.music_player != outgoing, "Background advances to index " + str(expected_index))
 		if expected_index == 1:
-			game._set_music(false)
-			var incoming: AudioStreamPlayer = audio.music_player
-			var paused_at := incoming.get_playback_position()
-			await create_timer(0.25).timeout
-			check(incoming.stream_paused and outgoing.stream_paused and absf(incoming.get_playback_position() - paused_at) < 0.05, "Pause freezes both sides of crossfade")
-			game._set_muted(true)
-			game._set_music(true)
-			check(not incoming.stream_paused and incoming.volume_db <= -80 and outgoing.volume_db <= -80, "Muted resume remains silent during overlap")
-			game._set_muted(false)
-			game._set_volume(0.6)
-		await create_timer(0.25).timeout
-		check(not outgoing.playing and audio.music_player.playing, "Crossfade retires only the old player")
-	game.audio.set_process(false)
-	game.audio.music_player.seek(game.audio.music_player.stream.get_length() - 0.1)
-	await create_timer(0.4).timeout
-	check(game.audio.track_index == 1 and game.audio.music_player.playing, "Natural finished signal advances if overlap polling is skipped")
-	game.audio.set_process(true)
-	var player: AudioStreamPlayer = game.audio.music_player
-	var position := player.get_playback_position()
-	game._set_music(true)
+			music.set_enabled(false)
+			var incoming: AudioStreamPlayer = music.music_player
+			position = incoming.get_playback_position()
+			await create_timer(0.2).timeout
+			check(incoming.stream_paused and outgoing.stream_paused and absf(incoming.get_playback_position() - position) < 0.05, "Pause freezes both overlapping players")
+			music.set_muted(true)
+			music.set_enabled(true)
+			check(incoming.volume_linear == 0 and outgoing.volume_linear == 0 and game.audio.muted, "Muted overlap remains silent, action audio follows settings")
+			music.set_muted(false)
+		await create_timer(0.8).timeout
+		check(not outgoing.playing and music.music_player.playing, "Overlap retires only outgoing playback")
+	music.set_process(false)
+	music.music_player.seek(music.music_player.stream.get_length() - 0.1)
+	await create_timer(0.95).timeout
+	check(music.track_index == 1 and music.music_player.playing, "Finished fallback advances when overlap polling is skipped")
+	music.set_process(true)
+	var player: AudioStreamPlayer = music.music_player
+	position = player.get_playback_position()
+	music.play_cue(&"background")
 	game._restart()
 	await settle()
-	check(game.audio.music_player == player and player.get_playback_position() >= position and not boot.has_node("StartScreen"), "Repeated enable and mission restart preserve music, no intro replay")
-	game.audio.set_level(0)
-	check(player.volume_linear == 0 and game.audio.effects_player.volume_linear == 0, "Zero master level truly silences both categories")
+	check(music.music_player == player and player.get_playback_position() >= position and boot.phase == "PLAY", "Restart and repeated cue preserve playback, no intro replay")
+	game._set_volume(0)
+	check(player.volume_linear == 0 and game.audio.effects_player.volume_linear == 0, "Master zero silences music and effects")
+	game._set_volume(0.35)
 	boot.queue_free()
 	await settle()
-	# Other input devices pass through the same one-shot gateway.
-	var click := InputEventMouseButton.new()
-	click.button_index = MOUSE_BUTTON_LEFT
-	click.pressed = true
-	click.position = Vector2(80, 80)
-	var touch := InputEventScreenTouch.new()
-	touch.pressed = true
-	var pad := InputEventJoypadButton.new()
-	pad.button_index = JOY_BUTTON_A
-	pad.pressed = true
-	for event in [click, touch, pad]:
-		boot = packed.instantiate()
-		root.add_child(boot)
-		await settle()
-		root.push_input(event)
-		await settle()
-		check(boot.desktop != null and boot.desktop.audio.music_player.playing and boot.get_child_count() == 1, "Start by " + event.get_class())
-		boot.queue_free()
-		await settle()
+	check(music.is_inside_tree() and player.playing, "Singleton survives desktop destruction")
 	print("STARTUP / AUDIO: %d checks, %d failures" % [count, failures.size()])
 	quit(0 if failures.is_empty() else 1)

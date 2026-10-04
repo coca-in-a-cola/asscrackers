@@ -2,7 +2,7 @@
 
 ## Layout
 
-`boot.tscn` is the project entry point. It first shows `start_screen.tscn` with its own dark, grid-based cyberpunk theme and credits. The first accepted input creates the desktop below and starts music synchronously. No audio player or mission exists before that gesture. Restart operates inside the existing desktop. See [startup and audio](startup-audio.md).
+`boot.tscn` starts with silent credits. Its accepted input starts Sycophant, prepares the desktop behind a black curtain, reveals portraits and runs the manual briefing. The desktop appears behind the dialogue; all applications remain closed when control is handed over. MusicManager is an independent scene Autoload with idle players before entry. Restart operates inside the existing desktop. See [intro and audio](startup-audio.md).
 
 ```text
 main.tscn
@@ -22,6 +22,8 @@ main.tscn
 ```
 
 `Applications` is a plain Control with a window manager, not a layout Container. Initial positions and sizes are chosen once; titlebars subsequently move windows without resizing them. Their usable bounds leave the two-row taskbar accessible. Resizing the game viewport clamps window positions, preserving their dimensions. Overlap is intentional and controlled by active-window draw order. Containers still own geometry inside applications.
+
+All windows start hidden with no active application. Wrapped text is preflowed at real widths while the group is transparent, then authored visibility is restored. `layout_ready` gates early open requests and prevents zero-width cached heights from stretching hidden windows. Default keyboard focus returns to a shortcut rather than a hidden field/result button.
 
 Shortcuts and taskbar buttons open or activate existing application instances. X hides an application; it never deletes its controls or stops domain work. Closing the active window activates another visible window. Dragging is bounded to keep windows accessible; modal dialogs cancel any active drag. Recon's leaf subwindow follows its owner and graph scrolling, stays inside usable screen bounds and hides when its owner closes or another application is activated. Read Me opens modal help.
 
@@ -45,7 +47,7 @@ Fragment slots remain persistent and never insert data automatically. Graph node
 | Statusbar | `1:3295` | Pastel inset StyleBox based on kit geometry; separate Label |
 | Terminal | `2:983`, `2:730` | Program and Run Program icons |
 | Dictionary | `2:722` | Folder icon |
-| Self-portrait | `2:780` + `avatars/avatar.png` | Paint title icon; profile Resource supplies portrait |
+| Self-portrait | `2:780` + `assets/portraits/player-icon.png` | Paint title icon; profile Resource supplies prepared player portrait |
 | Dossier / facts | `2:993`, `2:750` | Search in PC and Notepad icons |
 | Taskbar / dialogs | `2:784`, `2:988`, `2:754` | Start, Help and File icons |
 

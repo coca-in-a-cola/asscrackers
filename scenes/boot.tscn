@@ -1,8 +1,9 @@
-[gd_scene load_steps=4 format=3]
+[gd_scene load_steps=5 format=3]
 
 [ext_resource type="Script" path="res://scripts/ui/boot.gd" id="1"]
 [ext_resource type="PackedScene" path="res://scenes/ui/start_screen.tscn" id="2"]
 [ext_resource type="PackedScene" path="res://scenes/main.tscn" id="3"]
+[ext_resource type="PackedScene" path="res://scenes/ui/intro_dialogue.tscn" id="4"]
 
 [node name="Boot" type="Control"]
 layout_mode = 3
@@ -18,4 +19,23 @@ desktop_scene = ExtResource("3")
 unique_name_in_owner = true
 layout_mode = 1
 
+[node name="FadeLayer" type="CanvasLayer" parent="."]
+unique_name_in_owner = true
+layer = 95
+visible = false
+[node name="Curtain" type="ColorRect" parent="FadeLayer"]
+unique_name_in_owner = true
+modulate = Color(1, 1, 1, 0)
+anchors_preset = 15
+anchor_right = 1.0
+anchor_bottom = 1.0
+grow_horizontal = 2
+grow_vertical = 2
+color = Color(0, 0, 0, 1)
+[node name="Intro" parent="." instance=ExtResource("4")]
+unique_name_in_owner = true
+
 [connection signal="start_requested" from="StartScreen" to="." method="_start"]
+[connection signal="started" from="Intro" to="." method="_on_dialogue_started"]
+[connection signal="desktop_requested" from="Intro" to="." method="_reveal_desktop"]
+[connection signal="finished" from="Intro" to="." method="_finish_intro"]

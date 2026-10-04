@@ -1,0 +1,10 @@
+[gd_resource type="Resource" script_class="MusicCue" load_steps=3 format=3]
+[ext_resource type="Script" path="res://scripts/audio/music_cue.gd" id="1"]
+[ext_resource type="AudioStream" path="res://assets/sfx/Karl Casey - Sycophant.mp3" id="2"]
+[resource]
+script = ExtResource("1")
+id = &"intro"
+tracks = Array[AudioStream]([ExtResource("2")])
+repeat = true
+crossfade_seconds = 0.75
+transition_seconds = 1.5

@@ -1,0 +1,139 @@
+[gd_scene load_steps=6 format=3]
+[ext_resource type="Script" path="res://scripts/ui/intro_dialogue.gd" id="1"]
+[ext_resource type="Theme" path="res://assets/ui/startup_theme.tres" id="2"]
+[ext_resource type="Resource" path="res://data/dialogues/intro.tres" id="3"]
+[sub_resource type="StyleBoxFlat" id="Panel"]
+bg_color = Color(0.025, 0.045, 0.07, 0.97)
+border_width_left = 1
+border_width_top = 1
+border_width_right = 1
+border_width_bottom = 1
+border_color = Color(0.39, 0.96, 0.85, 0.4)
+content_margin_left = 20.0
+content_margin_top = 16.0
+content_margin_right = 20.0
+content_margin_bottom = 16.0
+[sub_resource type="StyleBoxFlat" id="HeaderPlate"]
+bg_color = Color(0.025, 0.045, 0.07, 0.95)
+content_margin_left = 12.0
+content_margin_top = 8.0
+content_margin_right = 12.0
+content_margin_bottom = 8.0
+
+[node name="IntroDialogue" type="CanvasLayer"]
+layer = 100
+visible = false
+script = ExtResource("1")
+sequence = ExtResource("3")
+[node name="StageDimmer" type="ColorRect" parent="."]
+unique_name_in_owner = true
+modulate = Color(1, 1, 1, 0)
+anchors_preset = 15
+anchor_right = 1.0
+anchor_bottom = 1.0
+grow_horizontal = 2
+grow_vertical = 2
+color = Color(0, 0, 0, 0.5)
+mouse_filter = 2
+[node name="View" type="MarginContainer" parent="."]
+unique_name_in_owner = true
+anchors_preset = 15
+anchor_right = 1.0
+anchor_bottom = 1.0
+grow_horizontal = 2
+grow_vertical = 2
+theme = ExtResource("2")
+theme_override_constants/margin_left = 40
+theme_override_constants/margin_top = 32
+theme_override_constants/margin_right = 40
+theme_override_constants/margin_bottom = 32
+[node name="Stack" type="VBoxContainer" parent="View"]
+layout_mode = 2
+theme_override_constants/separation = 16
+[node name="Header" type="PanelContainer" parent="View/Stack"]
+layout_mode = 2
+theme_override_styles/panel = SubResource("HeaderPlate")
+[node name="Row" type="HBoxContainer" parent="View/Stack/Header"]
+layout_mode = 2
+[node name="Channel" type="Label" parent="View/Stack/Header/Row"]
+layout_mode = 2
+size_flags_horizontal = 3
+theme_type_variation = &"BootAccent"
+text = "PRIVATE CHANNEL // NO RECORDING"
+[node name="Link" type="Label" parent="View/Stack/Header/Row"]
+layout_mode = 2
+theme_type_variation = &"BootSmall"
+text = "LINK ESTABLISHED_"
+[node name="Actors" type="HBoxContainer" parent="View/Stack"]
+layout_mode = 2
+size_flags_vertical = 3
+theme_override_constants/separation = 32
+[node name="Player" type="VBoxContainer" parent="View/Stack/Actors"]
+layout_mode = 2
+size_flags_horizontal = 3
+theme_override_constants/separation = 8
+[node name="PlayerPortrait" type="TextureRect" parent="View/Stack/Actors/Player"]
+unique_name_in_owner = true
+custom_minimum_size = Vector2(0, 220)
+layout_mode = 2
+size_flags_vertical = 3
+expand_mode = 1
+stretch_mode = 5
+mouse_filter = 2
+[node name="PlayerName" type="Label" parent="View/Stack/Actors/Player"]
+unique_name_in_owner = true
+layout_mode = 2
+theme_type_variation = &"BootSmall"
+horizontal_alignment = 1
+[node name="Curator" type="VBoxContainer" parent="View/Stack/Actors"]
+layout_mode = 2
+size_flags_horizontal = 3
+theme_override_constants/separation = 8
+[node name="CuratorPortrait" type="TextureRect" parent="View/Stack/Actors/Curator"]
+unique_name_in_owner = true
+custom_minimum_size = Vector2(0, 220)
+layout_mode = 2
+size_flags_vertical = 3
+expand_mode = 1
+stretch_mode = 5
+mouse_filter = 2
+[node name="CuratorName" type="Label" parent="View/Stack/Actors/Curator"]
+unique_name_in_owner = true
+layout_mode = 2
+theme_type_variation = &"BootSmall"
+horizontal_alignment = 1
+[node name="DialoguePanel" type="PanelContainer" parent="View/Stack"]
+unique_name_in_owner = true
+layout_mode = 2
+theme_override_styles/panel = SubResource("Panel")
+[node name="Content" type="VBoxContainer" parent="View/Stack/DialoguePanel"]
+layout_mode = 2
+theme_override_constants/separation = 12
+[node name="Heading" type="HBoxContainer" parent="View/Stack/DialoguePanel/Content"]
+layout_mode = 2
+[node name="Speaker" type="Label" parent="View/Stack/DialoguePanel/Content/Heading"]
+unique_name_in_owner = true
+layout_mode = 2
+size_flags_horizontal = 3
+theme_override_font_sizes/font_size = 20
+[node name="Progress" type="Label" parent="View/Stack/DialoguePanel/Content/Heading"]
+unique_name_in_owner = true
+layout_mode = 2
+theme_type_variation = &"BootSmall"
+[node name="Rule" type="HSeparator" parent="View/Stack/DialoguePanel/Content"]
+layout_mode = 2
+[node name="Body" type="RichTextLabel" parent="View/Stack/DialoguePanel/Content"]
+unique_name_in_owner = true
+custom_minimum_size = Vector2(0, 84)
+layout_mode = 2
+theme_override_colors/default_color = Color(0.9, 0.95, 0.95, 1)
+theme_override_font_sizes/normal_font_size = 22
+scroll_active = false
+[node name="HintPlate" type="PanelContainer" parent="View/Stack"]
+layout_mode = 2
+theme_override_styles/panel = SubResource("HeaderPlate")
+[node name="Hint" type="Label" parent="View/Stack/HintPlate"]
+layout_mode = 2
+theme_type_variation = &"BootSmall"
+text = "ANY KEY / CLICK — CONTINUE     HOLD SPACE — FAST FORWARD"
+horizontal_alignment = 1

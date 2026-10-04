@@ -53,9 +53,11 @@ layout_mode = 2
 text = "Music"
 tooltip_text = "Pause or resume the Karl Casey playlist"
 [node name="Mute" parent="Row/Actions" instance=ExtResource("3")]
+unique_name_in_owner = true
 layout_mode = 2
 text = "Mute"
 [node name="Volume" type="HSlider" parent="Row/Actions"]
+unique_name_in_owner = true
 layout_mode = 2
 custom_minimum_size = Vector2(64, 24)
 tooltip_text = "Master volume"

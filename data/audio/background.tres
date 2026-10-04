@@ -1,0 +1,12 @@
+[gd_resource type="Resource" script_class="MusicCue" load_steps=5 format=3]
+[ext_resource type="Script" path="res://scripts/audio/music_cue.gd" id="1"]
+[ext_resource type="AudioStream" path="res://assets/sfx/Karl Casey - Hackers.mp3" id="2"]
+[ext_resource type="AudioStream" path="res://assets/sfx/Karl Casey - New Beginnings.mp3" id="3"]
+[ext_resource type="AudioStream" path="res://assets/sfx/Karl Casey - The Saga.mp3" id="4"]
+[resource]
+script = ExtResource("1")
+id = &"background"
+tracks = Array[AudioStream]([ExtResource("2"), ExtResource("3"), ExtResource("4")])
+repeat = true
+crossfade_seconds = 0.75
+transition_seconds = 1.5

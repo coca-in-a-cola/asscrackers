@@ -15,6 +15,10 @@ run/main_scene="res://scenes/boot.tscn"
 config/features=PackedStringArray("4.7", "GL Compatibility")
 config/icon="res://icon.svg"
 
+[autoload]
+
+MusicManager="*res://scenes/audio/music_manager.tscn"
+
 [display]
 
 window/size/viewport_width=1440
@@ -27,6 +31,13 @@ window/stretch/aspect="expand"
 [physics]
 
 3d/physics_engine="Jolt Physics"
+
+[input]
+
+dialogue_fast_forward={
+"deadzone": 0.5,
+"events": [Object(InputEventKey,"physical_keycode":32)]
+}
 
 [rendering]
 

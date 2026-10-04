@@ -14,6 +14,8 @@
 - Exercise one short job with the real runtime clock in addition to deterministic model-clock tests.
 - Verify the silent entry, ordered credits, bounds at all three resolutions, accepted input modalities and entry-key isolation including held repeats.
 - Verify real MP3 import/order, Music/SFX routing, automatic playlist wrap/crossfade, pausing both overlap players, mute/zero level, taskbar pause/resume and uninterrupted playback across mission restart.
+- Verify full darkness, portrait order, exact reference line, four-line reveal barrier, manual/held-Space progression, tool/risk lockout, handoff key quarantine and initially closed windows.
+- Verify editor-authored intro/background cues, Sycophant repetition, cue-entry crossfade and singleton survival after scene destruction. Graphical test watchdogs bound runtime script failures.
 
 Results: [verification](verification.md).
 

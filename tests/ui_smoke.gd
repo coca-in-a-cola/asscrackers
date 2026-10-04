@@ -5,6 +5,7 @@ var count := 0
 
 func _initialize() -> void:
 	call_deferred("run")
+	create_timer(45.0).timeout.connect(func(): printerr("UI FAIL: watchdog timeout"); quit(1))
 
 func check(condition: bool, description: String) -> void:
 	count += 1
@@ -94,17 +95,22 @@ func check_layout(scene: Control) -> void:
 		check(popup.get_global_rect().position.x >= 0 and popup.get_global_rect().end.x <= bounds.x and popup.get_global_rect().end.y < scene.footer.get_global_rect().position.y, "Intel subwindow stays in usable screen area")
 
 func run() -> void:
+	var music: Node = root.get_node("MusicManager")
 	var scene = load("res://scenes/main.tscn").instantiate()
 	scene.get_node("Session").automatic_clock = false
 	root.add_child(scene)
 	await settle()
 	var manager: Control = scene.get_node("Applications")
+	if not manager.layout_is_ready():
+		await manager.layout_ready
 	var terminal: Control = manager.application(&"Terminal")
 	var dictionary: Control = manager.application(&"Dictionary")
 	var dossier_window: Control = manager.application(&"Dossier")
 	var popup: Control = scene.get_node("IntelDetail")
 	check(scene.run_button.disabled and scene.chip_grid.get_child_count() == 6, "Empty six-slot state")
-	check(scene.portrait.texture.resource_path == "res://avatars/avatar.png", "Operator portrait preserved")
+	check(scene.portrait.texture.resource_path == "res://assets/portraits/player-icon.png", "Operator uses prepared player portrait")
+	for window in manager.get_children():
+		check(not window.visible, "Applications start hidden: " + window.name)
 	check(scene.dossier.nodes.size() == 2 and not scene.dossier.nodes.has("pet"), "Initial graph hides undiscovered branches")
 	check(terminal.target_label.text.contains("lexa@anus.industries"), "Known login displayed")
 	check_layout(scene)
@@ -122,6 +128,9 @@ func run() -> void:
 	await drag_title(terminal, Vector2(-3000, -3000))
 	check(terminal.position.x >= 8 and terminal.position.y >= 8 and terminal.size == original_size, "Dragging is bounded, size fixed")
 	await drag_title(terminal, original_position - terminal.position)
+	for id in [&"Dictionary", &"Operator", &"Dossier"]:
+		scene._activate_application(id)
+	await settle()
 	scene.effects_toggle.button_pressed = false
 	await settle()
 	check(not scene.get_node("RetroEffects").visible, "FX disables entire stack")
@@ -256,11 +265,12 @@ func run() -> void:
 	check(scene.modal.visible and scene.session.engine.result == "TRACE", "Paid recon can trigger shared-budget trace")
 	await capture("trace")
 	scene.effects_toggle.button_pressed = false
-	scene.audio.set_music(true)
-	scene.audio.set_muted(true)
+	music.play_cue(&"background")
+	scene._set_music(true)
+	scene._set_muted(true)
 	scene._restart()
-	check(scene.audio.muted and scene.audio.music_player.playing and not scene.effects_enabled and scene.dossier.nodes.size() == 2, "Restart resets recon, preserves presentation preferences")
-	scene.audio.set_music(false)
+	check(scene.audio.muted and music.music_player.playing and not scene.effects_enabled and scene.dossier.nodes.size() == 2, "Restart resets recon, preserves presentation preferences")
+	scene._set_music(false)
 	print("UI SMOKE: %d checks, %d failures" % [count, failures.size()])
 	scene.queue_free()
 	await process_frame
